@@ -38,7 +38,7 @@ public interface JSObject {
      *
      * @param   methodName  The name of the method to call
      * @param   args  An array of parameters.
-     * @return  The result of the evaluation
+     * @return  The result of the evaluation (unwrapped if required)
      * @exception   JSException  For any error during interpretation
      */
     abstract public Object call(String methodName,Object args[]) throws JSException;
@@ -49,7 +49,7 @@ public interface JSObject {
      * return statement.
      *
      * @param   s  The string to evaluate
-     * @return  The result of the evaluation (null if no value returned)
+     * @return  The result of the evaluation (null if no value returned, unwrapped if required)
      * @exception   JSException  For any error during interpretation
      */
     abstract public Object eval(String s) throws JSException;
@@ -62,7 +62,7 @@ public interface JSObject {
      *
      * @param   r  The Reader stream to evaluate
      * @param   d A description of the Reader for error messages
-     * @return  The result of the evaluation (null if no value returned)
+     * @return  The result of the evaluation (null if no value returned, unwrapped if required)
      * @exception   JSException  For any error during interpretation
      */
     abstract public Object eval(Reader r, String d) throws JSException;
@@ -73,7 +73,7 @@ public interface JSObject {
      * Consider the string as a function, allowing the return statement.
      *
      * @param   s  The string to evaluate
-     * @return  The result of the evaluation (null if no value returned)
+     * @return  The result of the evaluation (null if no value returned, unwrapped if required)
      * @exception   JSException  For any error during interpretation
      */
     abstract public Object evalAsFunction(String s) throws JSException;
@@ -84,7 +84,7 @@ public interface JSObject {
      *
      * @param   r  The Reader stream to evaluate
      * @param   d A description of the Reader for error messages
-     * @return  The result of the evaluation (null if no value returned)
+     * @return  The result of the evaluation (null if no value returned, unwrapped if required)
      * @exception   JSException  For any error during interpretation
      */
     //abstract public Object evalAsFunction(Reader r, String d) throws JSException;
@@ -98,7 +98,7 @@ public interface JSObject {
      * @param   s  The string to evaluate
      * @param  names the names of the parameters
      * @param  values the values of the parameters
-     * @return  The result of the evaluation (null if no value returned)
+     * @return  The result of the evaluation (null if no value returned, unwrapped if required)
      * @exception   JSException  For any error during interpretation
      */
     abstract public Object evalAsFunction(String s, String [] names, Object values[]) throws JSException;
@@ -121,7 +121,7 @@ public interface JSObject {
      * Get the named property of this object.
      *
      * @param   name  The name of the property to get
-     * @return  The value of the property
+     * @return  The value of the property (unwrapepd if required)
      * @exception   JSException  For any error during interpretation
      */
     abstract public Object getMember(String name) throws JSException;
@@ -131,7 +131,7 @@ public interface JSObject {
      *
      * @param   index  The index value of the property (converted
      *                 to string if not an array)
-     * @return  The value of the property
+     * @return  The value of the property (unwrapped if required)
      * @exception   JSException  For any error during interpretation
      */
     abstract public Object getSlot(int index) throws JSException;

@@ -4,24 +4,24 @@ import FESI.AST.*;
 
 public class EcmaScriptTokenManager implements EcmaScriptConstants
 {
+  public  java.io.PrintStream debugStream = System.out;
+  public  void setDebugStream(java.io.PrintStream ds) { debugStream = ds; }
 private final int jjStopStringLiteralDfa_0(int pos, long active0, long active1)
 {
    switch (pos)
    {
       case 0:
+         if ((active0 & 0x8L) != 0L)
+            return 0;
+         if ((active1 & 0x2L) != 0L)
+            return 4;
          if ((active0 & 0x3ffffffff800L) != 0L)
          {
             jjmatchedKind = 54;
             return 9;
          }
-         if ((active1 & 0x2L) != 0L)
-            return 4;
-         if ((active0 & 0x8L) != 0L)
-            return 0;
          return -1;
       case 1:
-         if ((active0 & 0x200060000L) != 0L)
-            return 9;
          if ((active0 & 0x3ffdfff9f800L) != 0L)
          {
             if (jjmatchedPos != 1)
@@ -31,6 +31,8 @@ private final int jjStopStringLiteralDfa_0(int pos, long active0, long active1)
             }
             return 9;
          }
+         if ((active0 & 0x200060000L) != 0L)
+            return 9;
          return -1;
       case 2:
          if ((active0 & 0x40000888000L) != 0L)
@@ -56,24 +58,24 @@ private final int jjStopStringLiteralDfa_0(int pos, long active0, long active1)
             return 9;
          return -1;
       case 4:
-         if ((active0 & 0x128072000800L) != 0L)
-            return 9;
          if ((active0 & 0x17980513000L) != 0L)
          {
             jjmatchedKind = 54;
             jjmatchedPos = 4;
             return 9;
          }
+         if ((active0 & 0x128072000800L) != 0L)
+            return 9;
          return -1;
       case 5:
-         if ((active0 & 0x14800502000L) != 0L)
-            return 9;
          if ((active0 & 0x3180011000L) != 0L)
          {
             jjmatchedKind = 54;
             jjmatchedPos = 5;
             return 9;
          }
+         if ((active0 & 0x14800502000L) != 0L)
+            return 9;
          return -1;
       case 6:
          if ((active0 & 0x80011000L) != 0L)
@@ -1461,25 +1463,25 @@ static final long[] jjtoSpecial = {
 static final long[] jjtoMore = {
    0x4c0L, 0x0L, 
 };
-private ASCII_CharStream input_stream;
+protected SimpleCharStream input_stream;
 private final int[] jjrounds = new int[86];
 private final int[] jjstateSet = new int[172];
 StringBuffer image;
 int jjimageLen;
 int lengthOfMatch;
 protected char curChar;
-public EcmaScriptTokenManager(ASCII_CharStream stream)
+public EcmaScriptTokenManager(SimpleCharStream stream)
 {
-   if (ASCII_CharStream.staticFlag)
+   if (SimpleCharStream.staticFlag)
       throw new Error("ERROR: Cannot use a static CharStream class with a non-static lexical analyzer.");
    input_stream = stream;
 }
-public EcmaScriptTokenManager(ASCII_CharStream stream, int lexState)
+public EcmaScriptTokenManager(SimpleCharStream stream, int lexState)
 {
    this(stream);
    SwitchTo(lexState);
 }
-public void ReInit(ASCII_CharStream stream)
+public void ReInit(SimpleCharStream stream)
 {
    jjmatchedPos = jjnewStateCnt = 0;
    curLexState = defaultLexState;
@@ -1493,7 +1495,7 @@ private final void ReInitRounds()
    for (i = 86; i-- > 0;)
       jjrounds[i] = 0x80000000;
 }
-public void ReInit(ASCII_CharStream stream, int lexState)
+public void ReInit(SimpleCharStream stream, int lexState)
 {
    ReInit(stream);
    SwitchTo(lexState);
@@ -1506,7 +1508,7 @@ public void SwitchTo(int lexState)
       curLexState = lexState;
 }
 
-private final Token jjFillToken()
+protected Token jjFillToken()
 {
    Token t = Token.newToken(jjmatchedKind);
    t.kind = jjmatchedKind;
@@ -1526,7 +1528,7 @@ int jjround;
 int jjmatchedPos;
 int jjmatchedKind;
 
-public final Token getNextToken() 
+public Token getNextToken() 
 {
   int kind;
   Token specialToken = null;
@@ -1650,17 +1652,10 @@ public final Token getNextToken()
   }
 }
 
-final void SkipLexicalActions(Token matchedToken)
+void SkipLexicalActions(Token matchedToken)
 {
    switch(jjmatchedKind)
    {
-      case 8 :
-         if (image == null)
-            image = new StringBuffer(new String(input_stream.GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1))));
-         else
-            image.append(new String(input_stream.GetSuffix(jjimageLen + (lengthOfMatch = jjmatchedPos + 1))));
-                                                 input_stream.backup(1);
-         break;
       default :
          break;
    }

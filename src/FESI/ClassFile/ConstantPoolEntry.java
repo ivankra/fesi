@@ -27,8 +27,6 @@ package FESI.ClassFile;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-import FESI.ClassFile.ClassFile;
-
 /**
  * <p>
  * The ConstantPoolEntry is an abstract base class representing common 

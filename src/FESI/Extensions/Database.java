@@ -17,16 +17,33 @@
 
 package FESI.Extensions;
 
-import FESI.Parser.*;
-import FESI.AST.*;
-import FESI.Interpreter.*;
-import FESI.Exceptions.*;
-import FESI.Data.*;
-
-import java.util.Date;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.Driver;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Enumeration;
 import java.util.Vector;
-import java.sql.*; 
+
+import FESI.Data.BuiltinFunctionObject;
+import FESI.Data.ESBoolean;
+import FESI.Data.ESLoader;
+import FESI.Data.ESNull;
+import FESI.Data.ESNumber;
+import FESI.Data.ESObject;
+import FESI.Data.ESString;
+import FESI.Data.ESUndefined;
+import FESI.Data.ESValue;
+import FESI.Data.ESWrapper;
+import FESI.Data.FunctionPrototype;
+import FESI.Data.GlobalObject;
+import FESI.Data.ObjectPrototype;
+import FESI.Exceptions.EcmaScriptException;
+import FESI.Interpreter.Evaluator;
+import FESI.Interpreter.LocalClassLoader;
 
 
 /**

@@ -19,14 +19,22 @@
  
 package FESI.swinggui;
 
-import java.io.*;
-import java.net.*;
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
-import javax.swing.event.*;
-
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Toolkit;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Vector;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
+import javax.swing.WindowConstants;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 
 /**
  * Help window (HTML based)
@@ -116,8 +124,7 @@ public class HelpWindow extends JFrame implements HyperlinkListener {
             Cursor cursor = html.getCursor();
             Cursor waitCursor = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR);
             html.setCursor(waitCursor);
-            SwingUtilities.invokeLater(new PageLoader(this, html, event.getURL(), cursor));
-    
+            SwingUtilities.invokeLater(new PageLoader(this, html, event.getURL(), cursor));  
         }
     }
     

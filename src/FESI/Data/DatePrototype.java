@@ -17,13 +17,13 @@
 
 package FESI.Data;
 
-import FESI.Exceptions.*;
-import FESI.Interpreter.*;
-
-import java.util.Date;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
+
+import FESI.Exceptions.EcmaScriptException;
+import FESI.Interpreter.Evaluator;
 
 /**
  * Implements the prototype and is the class of all Date objects

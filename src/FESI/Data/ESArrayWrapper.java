@@ -17,12 +17,13 @@
 
 package FESI.Data;
 
-import FESI.Exceptions.*;
+import java.lang.reflect.Array;
 import java.util.Enumeration;
-import java.util.Date;
-import FESI.Interpreter.*;
 
-import java.lang.reflect.*;
+import FESI.Exceptions.EcmaScriptException;
+import FESI.Exceptions.ProgrammingError;
+import FESI.Interpreter.Evaluator;
+import FESI.Interpreter.ScopeChain;
 
 
 // Class to wrap a Java array as an EcmaScript object

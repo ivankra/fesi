@@ -17,8 +17,9 @@
 
 package FESI.Data;
 
-import FESI.Exceptions.*;
-import FESI.Interpreter.*;
+import FESI.Exceptions.EcmaScriptException;
+import FESI.Exceptions.ProgrammingError;
+import FESI.Interpreter.Evaluator;
 
 /**
  * Implemements the EcmaScript Math singleton.

@@ -17,10 +17,13 @@
 
 package FESI.Interpreter;
 
-import FESI.Data.ESLoader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 
-import java.net.*;
-import java.io.*;
+import FESI.Data.ESLoader;
 
 public class FESIResourceConnection extends URLConnection {
     private static boolean debug = false;

@@ -25,8 +25,6 @@
 
 package FESI.ClassFile;
 
-import FESI.ClassFile.ClassFile;
-import FESI.ClassFile.RefConstant;
 
 /**
  * <p> implements a CONSTANT_FIELDREF CPE </p>

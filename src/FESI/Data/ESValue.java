@@ -19,7 +19,7 @@ package FESI.Data;
 
 import java.util.Enumeration;
 
-import FESI.Exceptions.*;
+import FESI.Exceptions.EcmaScriptException;
 import FESI.Interpreter.Evaluator;
 
 /**

@@ -28,10 +28,6 @@ package FESI.ClassFile;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-import FESI.ClassFile.Attribute;
-import FESI.ClassFile.ClassFile;
-import FESI.ClassFile.ClassConstant;
-
 /**
  * <p>
  * The Exceptions class extends the Attribute class to enumerate the

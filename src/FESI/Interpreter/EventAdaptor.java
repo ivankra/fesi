@@ -24,20 +24,16 @@
 
 package FESI.Interpreter;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.InvocationTargetException;
-
-import FESI.Data.ESWrapper;
-import FESI.Exceptions.*;
-
-import java.util.EventObject;
-import java.util.EventListener;
-
-
 import java.beans.BeanInfo;
 import java.beans.EventSetDescriptor;
-import java.beans.Introspector;
 import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.EventObject;
+
+import FESI.Data.ESWrapper;
+import FESI.Exceptions.ProgrammingError;
 
 
 /**

@@ -17,8 +17,10 @@
 
 package FESI.Interpreter;
 
-import FESI.Exceptions.*;
-import FESI.Data.*;
+import FESI.Data.ESObject;
+import FESI.Data.ESReference;
+import FESI.Data.ESValue;
+import FESI.Exceptions.EcmaScriptException;
 
 /**
  * The scope chaine has established by WITH statements. Used to 

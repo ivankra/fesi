@@ -17,13 +17,30 @@
 
 package FESI.awtgui;
 
-import FESI.gui.*;
-import FESI.Exceptions.*;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Frame;
+import java.awt.TextArea;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.ByteArrayOutputStream;
+import java.io.FilterInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+import java.io.PrintStream;
 
-import java.awt.*;
-import java.awt.datatransfer.*;
-import java.awt.event.*;
-import java.io.*;
+import FESI.Exceptions.ProgrammingError;
+import FESI.gui.Console;
 
 // Inspired by JConsole v0.9 of Henrik Bengtsson
      

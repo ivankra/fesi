@@ -1,7 +1,7 @@
 FESI - Free EcmaScript Interpreter
 ==================================
 
-FESI Copyright (c) Jean-Marc Lugrin, 1996-2000
+FESI Copyright (c) Jean-Marc Lugrin, 1996-2003
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -17,36 +17,20 @@ You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+To install Fesi, double click on the installation jar, or 
+execute it using a command like 
+
+	java -jar install-fesi.jar
+
+A proper java version must be installed on your machine 
+(tested with 1.4 only).
+
+This start an installer that will prompt you for location and
+modules to install. The sources are included in the distribution
+kit.
 
 
-To install FESI under a MS Windows operating system first expand 
-the jar file in a suitable directory (the default location is 
-C:\program files\FESI). From a DOS window, type:
 
-    jar -xf fesikit.jar
-
-Some versions of winzip and other zip tools may not work properly,
-so using jar is recommended.
-
-Then go to the ..fesi/bin directory and launch the batch
-file setup.bat. Answer the few questions (usually defaults
-are ok).
-
-After setup was run the following files are available in 
-the binary directory:
-
-fesidev.bat - run the development environment (swing if possible)
-fesi.bat - run a script without window support
-fesiw.bat - run a script with awt window support
-fesis.bat - run a script with swing window support
-
-You can drag an ecmascript file to a batch file to start interpretation.
-
-
-Uninstall
-
-To uninstall it, just delete its directory. FESI does not make
-any change to any system file.
 
 Notes:
 
@@ -54,10 +38,7 @@ There is currently no specific help files, so the help points to the
 FESI home page available locally. Not all link work properly, due to
 limitation in the Swing HTML component.
 
-To use the regular expression extension you will need the 
-OroMatcher library available at http://www.quateams.com/oro/.
-To run some examples (FesiPop, FesiFTP) you will need the
-NetComponents library available at http://www.quateams.com/oro/.
+
     
 Release 1.0 - 18 October 1998
     Initial public release with sources (after extensive testing). 
@@ -150,3 +131,42 @@ Release 1.1.5 - 29 July 2000
      	which generated an error when a single line program was 
         terminated by a // comment.
 
+Release 1.1.6 - 4 Aug 2003
+    Avoid a useless backtrack in lexical parsing.
+    Corrected a bug in scope chain and prototype, added test
+    	in validation suite (thanks to Michael Schneider).
+    Corrected a bug in 'this' for called functions (thanks to 
+    Michael Schneider and a few others).
+    Corrected a bug in getTimezoneOffset (thank to Wendell T. Hicken)
+    Added substr from Wendell T. Hicken 
+    Added command @module to load module, use @load to load files
+    Normalized import statements (using Eclipse)
+    Use latest version of ORO and GNU regexpt libraries, removed 
+		deprecated methods used for OROlib.
+    Use latest version (3.1, open source, renamed the reader) of JavaCC
+    Use IzPack installer (http://www.izforge.com/izpack/)
+    Combine source,executable and examples in one kit.
+    Use ANT to control the code and site generation.
+    Currently removed the FesiFTP example (lack of time to integrate).
+
+Release 1.1.7 - 31 Aug 2003
+    Some enhancements in installatation script and documentation
+    Support of BSF, version 2.2 (see Bean Scripting Framwork), allowing to 
+		call FESI from a common interface used by many tools.
+    Added example for swing (examples/swing/swingev.esw) that demonstrate use of events.
+    Added getWrappedObject and getWrappedBean to the js package.
+    Upgraded to latest JavaCC and IzPack (no user visible change).
+
+
+Release 1.1.8 - 29 September 2003
+    Support of BSF migrated to version 2.3 (see Bean Scripting Framwork),
+		that is maintained by apache.
+    Upgraded to latest IzPack (no user visible change).
+    Include a precompiled jar for execution on JDK 1.1.8, with accompanying
+	command files (JDK 1.4 has a different class file format).
+
+
+
+
+
+    

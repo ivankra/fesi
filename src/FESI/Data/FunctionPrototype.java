@@ -17,7 +17,7 @@
 
 package FESI.Data;
 
-import FESI.Exceptions.*;
+import FESI.Exceptions.EcmaScriptException;
 import FESI.Interpreter.Evaluator;
 import FESI.Interpreter.ScopeChain;
 

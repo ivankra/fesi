@@ -17,16 +17,42 @@
 
 package FESI.swinggui;
 
-import FESI.gui.*;
- 
-import FESI.Exceptions.*;
-
-import java.awt.*;
-import java.awt.datatransfer.*;
-import java.awt.event.*;
-import java.io.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Event;
+import java.awt.FileDialog;
+import java.awt.Font;
+import java.awt.Frame;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FilterInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+import java.io.PrintStream;
 import java.util.Vector;
-import javax.swing.*;
+
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JScrollPane;
+import javax.swing.KeyStroke;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.WindowConstants;
+
+import FESI.Exceptions.ProgrammingError;
+import FESI.gui.InterpreterCommands;
 
 // Inspired by JConsole v0.9 of Henrik Bengtsson
 // Rewritten for Swing by JMLugrin

@@ -17,7 +17,7 @@
 
 package FESI.Data;
 
-import FESI.Exceptions.*;
+import FESI.Exceptions.EcmaScriptException;
 
 /**
  * Currently a reference is not a FESI value, as it can never be returned

@@ -17,9 +17,9 @@
 
 package FESI.swinggui;
 
-import FESI.gui.*;
+import javax.swing.JOptionPane;
 
-import javax.swing.*;
+import FESI.gui.ConfirmationBox;
 
 
 /**

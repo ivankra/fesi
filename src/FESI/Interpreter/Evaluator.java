@@ -17,21 +17,50 @@
 
 package FESI.Interpreter;
 
-import FESI.Exceptions.*;
-import FESI.Parser.*;
-import FESI.AST.*;
-import FESI.Extensions.Extension;
-import FESI.jslib.*;
-import FESI.Data.*;
-
-import java.util.Vector;
-import java.util.Hashtable;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.io.StringReader;
 import java.util.Enumeration;
-import java.util.EventObject;
+import java.util.Hashtable;
 import java.util.StringTokenizer;
+import java.util.Vector;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
-import java.io.*;
-import java.util.zip.*;
+import FESI.AST.ASTProgram;
+import FESI.AST.ASTStatement;
+import FESI.AST.ASTStatementList;
+import FESI.Data.ESLoader;
+import FESI.Data.ESObject;
+import FESI.Data.ESPackages;
+import FESI.Data.ESReference;
+import FESI.Data.ESUndefined;
+import FESI.Data.ESValue;
+import FESI.Data.ESWrapper;
+import FESI.Data.GlobalObject;
+import FESI.Data.JSGlobalWrapper;
+import FESI.Exceptions.EcmaScriptException;
+import FESI.Exceptions.EcmaScriptLexicalException;
+import FESI.Exceptions.EcmaScriptParseException;
+import FESI.Extensions.Extension;
+import FESI.Interpreter.EcmaScriptEvaluateVisitor;
+import FESI.Interpreter.EcmaScriptFunctionVisitor;
+import FESI.Interpreter.EcmaScriptVariableVisitor;
+import FESI.Interpreter.EvaluationSource;
+import FESI.Interpreter.FileEvaluationSource;
+import FESI.Interpreter.JarEvaluationSource;
+import FESI.Interpreter.ParsedProgram;
+import FESI.Interpreter.ScopeChain;
+import FESI.Interpreter.StringEvaluationSource;
+import FESI.Interpreter.UserEvaluationSource;
+import FESI.Parser.EcmaScript;
+import FESI.Parser.ParseException;
+import FESI.Parser.TokenMgrError;
+import FESI.jslib.JSException;
+import FESI.jslib.JSExtension;
 
 /**
  * Defines the evaluation interface and contains the evaluation context.
@@ -48,24 +77,26 @@ public class Evaluator {
    * Return the version identifier of the interpreter
    */
   public static String getVersion() {
-      return "1.1.5 (29-July-2000)";
+      return Version.Level + " (" + Version.Date + ")";
   }
-    
+
   /**
    * Return the welcome text (including copyright and version)
    * of the interpreter (as two lines)
    */
   public static String getWelcomeText() {
-      return 
+      return
       "FESI (pronounced like 'fuzzy'): an EcmaScript Interpreter" + eol +
-      "Copyright (c) Jean-Marc Lugrin, 1998 - Version: " + Evaluator.getVersion();
+      "Copyright (c) Jean-Marc Lugrin, 1998-2003 - Version: " + Evaluator.getVersion() + eol +
+      "Running under " + System.getProperty("java.version") + 
+            " of " +  System.getProperty("java.vendor");
 
   }
-    
+
   private boolean debugParse = false;
 
   // All privileged objects of interest of the evaluator
-  
+
   private GlobalObject globalObject = null;
 
   private ESObject objectPrototype = null;
@@ -77,7 +108,7 @@ public class Evaluator {
   private ESObject arrayPrototype = null;
   private ESObject datePrototype = null;
   private ESObject packageObject = null;
-  
+
   // Current environment
   private ScopeChain theScopeChain = null;
   private ESObject currentVariableObject = null;
@@ -87,10 +118,10 @@ public class Evaluator {
   private EcmaScriptFunctionVisitor functionDeclarationVisitor = null;
   private EcmaScriptVariableVisitor varDeclarationVisitor = null;
   //private EcmaScriptEvaluateVisitor evaluationVisitor = null;
-  
+
   // List of loaded extensions
   private Hashtable extensions = null;
-     
+
   /**
    * Reset the evaluator, forgetting all global definitions and loaded extensions
    */
@@ -100,18 +131,18 @@ public class Evaluator {
        // evaluationVisitor = new EcmaScriptEvaluateVisitor(this);
        globalObject = GlobalObject.makeGlobalObject(this);
        packageObject = new ESPackages(this);
-       
+
        extensions = new Hashtable(); // forget extensions
-       
+
   }
-  
+
   /**
    * Create a new empty evaluator
    */
   public Evaluator () {
       reset();
   }
-  
+
   /**
    * Get the variable visitor of this evaluator
    * @return the Variable visitor
@@ -123,7 +154,7 @@ public class Evaluator {
    //------------------------------------------------------------
    // Access to special objects of the environment
    //------------------------------------------------------------
-  
+
   /**
    * Get the this object of this evaluator
    * @return the this object
@@ -131,7 +162,7 @@ public class Evaluator {
   public ESObject getThisObject() {
       return currentThisObject;
   }
-  
+
   /**
    * Get the global object of this evaluator
    * @return the global object
@@ -139,16 +170,16 @@ public class Evaluator {
   public GlobalObject getGlobalObject() {
       return globalObject;
   }
-  
 
-  /** 
+
+  /**
    * Set the debug mode for the parser
    * @param dp true to set debug mode on
    */
   public void setDebugParse(boolean dp) {
       debugParse = dp;
   }
-  
+
   /**
    * Return the debug state for the parser
    * @return true if debug on
@@ -156,7 +187,7 @@ public class Evaluator {
   public boolean isDebugParse() {
       return debugParse;
   }
-  
+
    /**
     * Set the object prototype object
     * <P>Used only by initilization code
@@ -172,7 +203,7 @@ public class Evaluator {
     public ESObject getObjectPrototype() {
         return objectPrototype;
     }
-    
+
    /**
     * Set the Function prototype object
     * <P>Used only by initilization code
@@ -188,7 +219,7 @@ public class Evaluator {
     public ESObject getFunctionPrototype() {
         return functionPrototype;
     }
-    
+
    /**
     * Set the Function object
     * <P>Used only by initilization code
@@ -204,8 +235,8 @@ public class Evaluator {
     public ESObject getFunctionObject() {
         return functionObject;
     }
-    
-    
+
+
    /**
     * Set the String object prototype
     * <P>Used only by initilization code
@@ -221,7 +252,7 @@ public class Evaluator {
     public ESObject getStringPrototype() {
         return stringPrototype;
     }
-    
+
 
    /**
     * Set the Number object prototpe
@@ -270,7 +301,7 @@ public class Evaluator {
     public ESObject getArrayPrototype() {
         return arrayPrototype;
     }
-    
+
    /**
     * Set the Date object prototype
     * <P>Used only by initilization code
@@ -298,7 +329,7 @@ public class Evaluator {
    //------------------------------------------------------------
    // Extension support
    //------------------------------------------------------------
-   
+
    /**
     * Get a loaded extension by name
     * @param name Extension to look up
@@ -307,7 +338,7 @@ public class Evaluator {
    public Extension getExtension(String name) {
        return (Extension) extensions.get(name);
    }
-   
+
    /**
     * Get the list of all extensions
     * @return The extensions enumnerator
@@ -315,7 +346,7 @@ public class Evaluator {
    public Enumeration getExtensions() {
        return extensions.keys();
    }
-   
+
    /**
     * Add an extension by name, load it if not already loaded
     * @param name the name of the extension to load
@@ -353,13 +384,13 @@ public class Evaluator {
        }
        return extension;
    }
-     
-   
+
+
    /**
     * Add an extension by name, load it if not already loaded.
     * Generate an error if not found
     * @param name the name of the extension to load
-    * @return the loaded object 
+    * @return the loaded object
     * @exception EcmaScriptException if the extension cannot be loaded or error during initilization
     */
    public Object addMandatoryExtension(String name) throws EcmaScriptException {
@@ -381,11 +412,11 @@ public class Evaluator {
                    throw new EcmaScriptException("Extenstion object " + name + " of wrong type " + extension.getClass());
                }
                extensions.put(name, extension);
-          } catch (ClassNotFoundException e) { 
+          } catch (ClassNotFoundException e) {
                 throw new EcmaScriptException("Error loading extension " + name, e);
-          } catch (NoClassDefFoundError e) { 
+          } catch (NoClassDefFoundError e) {
                 throw new EcmaScriptException("Error loading extension " + name, e);
-          } catch (IllegalAccessException e) { 
+          } catch (IllegalAccessException e) {
                 throw new EcmaScriptException("Error loading extension " + name, e);
           } catch (InstantiationException e) {
                 throw new EcmaScriptException("Error loading extension " + name, e);
@@ -399,11 +430,11 @@ public class Evaluator {
     * Generate an error if not found
 	* @param name the name of the extension to load
 	* @param extension The extension object
- 	* @return the loaded object 
+ 	* @return the loaded object
  	* @exception EcmaScriptException if the extension cannot be loaded or error during initilization
  	*/
     public Object addMandatoryExtension(String name,FESI.jslib.JSExtension extension) throws EcmaScriptException {
- 		   
+
  		GlobalObject go = this.getGlobalObject();
  		JSGlobalWrapper jgo = new JSGlobalWrapper(go,this);
  		try {
@@ -411,15 +442,15 @@ public class Evaluator {
  		} catch (JSException e) {
  				throw new EcmaScriptException("Error initializing extension " + name, e);
  		}
- 			   
+
  		extensions.put(name, extension);
- 		
+
  	   	return extension;
-   }            
+   }
 
   /**
    * Get a reference to an indentifier (when its hash code is not known)
-   * @param identifier The name of the variable 
+   * @param identifier The name of the variable
    * @return A reference object
    */
   public ESReference getReference(String identifier) throws EcmaScriptException {
@@ -427,7 +458,7 @@ public class Evaluator {
   }
   /**
    * Get a reference to an indentifier (when its hash code is known)
-   * @param identifier The name of the variable 
+   * @param identifier The name of the variable
    * @param hash Its hash code (must be exact!)
    * @return A reference object
    */
@@ -436,7 +467,7 @@ public class Evaluator {
   }
   /**
    * Get the value of a variable in the scope chain (when its hash code is not known)
-   * @param identifier The name of the variable 
+   * @param identifier The name of the variable
    * @return A value
    */
   public ESValue getValue(String identifier) throws EcmaScriptException {
@@ -444,14 +475,14 @@ public class Evaluator {
   }
   /**
    * Get the value of a variable in the scope chain (when its hash code is known)
-   * @param identifier The name of the variable 
+   * @param identifier The name of the variable
    * @param hash Its hash code (must be exact!)
    * @return A value
    */
   public ESValue getValue(String identifier,int hash) throws EcmaScriptException {
      return theScopeChain.getValue(identifier, hash);
   }
-  
+
   /**
    * Call a routine referenced by name (in the scope chain)
    * @param thisObject the this of the called routine
@@ -459,7 +490,7 @@ public class Evaluator {
    * @param Its hash code
    * @param arguments The argument array
    * @exception EmcaScriptException In case of any error during evaluation
-   * @return the resulting value 
+   * @return the resulting value
    */
   public ESValue doIndirectCall(ESObject thisObject, String functionName,int hash, ESValue[] arguments) throws EcmaScriptException {
      return theScopeChain.doIndirectCall(this, thisObject, functionName, hash, arguments);
@@ -478,7 +509,7 @@ public class Evaluator {
         newVar.putValue(currentVariableObject, ESUndefined.theUndefined);
     }
   }
-  
+
   /**
    * Put a value in a variable (given as a reference)
    * @param leftValue The reference to the variable to modify
@@ -504,7 +535,7 @@ public class Evaluator {
     	if (!theSource.endsWith("\n")) {
     		theSource += "\n";
     	}
-    java.io.StringReader is = 
+    java.io.StringReader is =
             new java.io.StringReader(theSource);
     EcmaScript parser = new EcmaScript(is);
     try {
@@ -535,32 +566,32 @@ public class Evaluator {
         }
         throw new EcmaScriptLexicalException(e, es);
     }
-        
+
     ESObject savedVariableObject = currentVariableObject;
     currentVariableObject = globalObject;
-    
+
     try {
-        
+
         functionDeclarationVisitor.processFunctionDeclarations(programNode, es);
         varDeclarationVisitor.processVariableDeclarations(programNode, es);
         EcmaScriptEvaluateVisitor evaluationVisitor = new EcmaScriptEvaluateVisitor(this);
         theValue = evaluationVisitor.evaluateProgram(programNode, es);
-       
+
         if (theValue==null) theValue = ESUndefined.theUndefined; // null is not a valid result
-        
+
         if (evaluationVisitor.getCompletionCode()!= EcmaScriptEvaluateVisitor.C_NORMAL) {
-            throw new EcmaScriptException("Unexpected " + 
-                    evaluationVisitor.getCompletionCodeString() + 
+            throw new EcmaScriptException("Unexpected " +
+                    evaluationVisitor.getCompletionCodeString() +
                     " in eval parameter top level" );
         }
     } finally {
         currentVariableObject = savedVariableObject;
     }
-            
-    
+
+
      return theValue;
 }
-  
+
 
   /**
    * Sub evaluator - evaluate a loaded file as program (not a top level evaluation !)
@@ -605,8 +636,8 @@ public class Evaluator {
        String path = System.getProperty("FESI.path", null);
        if (path == null) path = System.getProperty("java.class.path",null);
        // System.out.println("** Try loading via " + path);
-       
-       ESValue value =  ESUndefined.theUndefined; 
+
+       ESValue value =  ESUndefined.theUndefined;
        if (path == null) {
            File file = new File(moduleName);
            try {
@@ -626,18 +657,18 @@ public class Evaluator {
            String tryPath = st.nextToken();
            value = tryLoad(tryPath, moduleName, hasSuffix);
            if (value != null) break; // Found
-       }      
-           
+       }
+
        if (value == null) {
            // Not found
            throw new EcmaScriptException("Module " + moduleName + " not found in " + path);
        }
-           
+
        return value;
     }
- 
-  /** 
-   * Try to load in a single path (directory or jar) environment  
+
+  /**
+   * Try to load in a single path (directory or jar) environment
    * (Utility routine to try load of each path entry)
    * @param tryPath The path to try
    * @param moduleName the name of the module to load
@@ -662,24 +693,24 @@ public class Evaluator {
                 }
             }
             if (!file.exists()) return null;
-            
+
             // A File is found, load it
             String cp;
             try {
                 cp = file.getCanonicalPath();
             } catch (IOException e) {
-                throw new EcmaScriptException("IO error accessing module " + moduleName + 
+                throw new EcmaScriptException("IO error accessing module " + moduleName +
                                             " in directory  " + dir, e);
             }
             // System.out.println("** File found: " + cp);
             return evaluateLoadFile(file);
-            
+
         } else if (dir.isFile()) {
             // System.out.println("** Looking in jar/zip: " + dir);
             ZipFile zipFile;
             try {
                 String cp = dir.getCanonicalPath();
-                zipFile = new ZipFile(cp); 
+                zipFile = new ZipFile(cp);
             } catch (IOException e) {
                 return null;        // Cannot open jar/zip, ignore
             }
@@ -697,11 +728,11 @@ public class Evaluator {
             }
             if (zipEntry == null) return null; // Not found in this jar file
             byte buf[] = null;
-            try {    
+            try {
                 InputStream inputStream = zipFile.getInputStream(zipEntry);
                 int limit = (int)zipEntry.getSize();
                 buf = new byte[limit];
-                
+
                 int total = 0;
                 while  (total < limit)
                 {
@@ -711,7 +742,7 @@ public class Evaluator {
                         throw new IOException ("Only " +
                             total + " bytes out of " + limit + " read from entry '" +
                             moduleName + "' in jar '" + zipFile.getName() +"'");
-                    } 
+                    }
                 }
                 inputStream.close();
             } catch (IOException e) {
@@ -746,29 +777,29 @@ public class Evaluator {
                           Vector localVariableNames,
                           ESObject thisObject) throws EcmaScriptException {
     ESValue theValue = ESUndefined.theUndefined;
-    
+
     ESObject savedVariableObject = currentVariableObject;
     ESObject savedThisObject = currentThisObject;
     ScopeChain previousScopeChain = theScopeChain;
 
     currentVariableObject = variableObject;
     currentThisObject = thisObject;
-    theScopeChain = new ScopeChain(globalObject, null); 
+    theScopeChain = new ScopeChain(globalObject, null);
     theScopeChain = new ScopeChain(variableObject, theScopeChain);
    // EvaluationSource savedEvaluationSource = currentEvaluationSource;
-   // currentEvaluationSource = es; 
+   // currentEvaluationSource = es;
     try {
         for (Enumeration e = localVariableNames.elements() ; e.hasMoreElements() ;) {
-             String variable =(String)(e.nextElement()); 
+             String variable =(String)(e.nextElement());
              createVariable(variable, variable.hashCode());
-         }    
+         }
          EcmaScriptEvaluateVisitor evaluationVisitor = new EcmaScriptEvaluateVisitor(this);
         theValue = evaluationVisitor.evaluateFunction(node, es);
         int cc = evaluationVisitor.getCompletionCode();
         if ((cc!= EcmaScriptEvaluateVisitor.C_NORMAL) &&
             (cc!= EcmaScriptEvaluateVisitor.C_RETURN)) {
-            throw new EcmaScriptException("Unexpected " + 
-                    evaluationVisitor.getCompletionCodeString() + 
+            throw new EcmaScriptException("Unexpected " +
+                    evaluationVisitor.getCompletionCodeString() +
                     " in function" );
         }
      } finally {
@@ -777,7 +808,7 @@ public class Evaluator {
         currentThisObject = savedThisObject;
        // currentEvaluationSource = savedEvaluationSource;
    }
-        
+
     return theValue;
   }
 
@@ -793,20 +824,20 @@ public class Evaluator {
                           ESObject scopeObject,
                           EvaluationSource es) throws EcmaScriptException {
     ESValue theValue = ESUndefined.theUndefined;
-    
-    theScopeChain = new ScopeChain(scopeObject, theScopeChain); 
+
+    theScopeChain = new ScopeChain(scopeObject, theScopeChain);
     try {
         EcmaScriptEvaluateVisitor evaluationVisitor = new EcmaScriptEvaluateVisitor(this);
         theValue = evaluationVisitor.evaluateWith(node, es);
    } finally {
         theScopeChain = theScopeChain.previousScope();
    }
-        
+
     return theValue;
   }
 
-    
-    
+
+
   /**
    * Top level core evaluator (on parsed program),
    * Must be called from a function synchronized on the evaluator
@@ -816,7 +847,7 @@ public class Evaluator {
    * @return The last value of the evaluation
    * @exception EmcaScriptException In case of any error during evaluation
    */
-   
+
   public ESValue evaluate(ParsedProgram program,
                              ESObject thisObject,
                              boolean acceptReturn) throws EcmaScriptException {
@@ -827,12 +858,18 @@ public class Evaluator {
     ESObject savedThisObject = currentThisObject;
     ScopeChain previousScopeChain = theScopeChain;
 
-    theScopeChain = new ScopeChain(globalObject, null); 
+    theScopeChain = new ScopeChain(globalObject, null);
     currentVariableObject = globalObject;
-    currentThisObject = (thisObject != null) ? thisObject : globalObject;
+    if (thisObject == null) {
+         currentThisObject = globalObject;
+    } else {
+         theScopeChain = new ScopeChain(thisObject, theScopeChain);
+         currentThisObject = thisObject;
+    }
+
 
     EcmaScriptEvaluateVisitor evaluationVisitor = new EcmaScriptEvaluateVisitor(this);
-    try {   
+    try {
 
        functionDeclarationVisitor.processFunctionDeclarations(node, program.getEvaluationSource());
        Vector variables = program.getVariableNames();
@@ -850,8 +887,8 @@ public class Evaluator {
     if (completionCode != EcmaScriptEvaluateVisitor.C_NORMAL) {
 
         if (completionCode != EcmaScriptEvaluateVisitor.C_RETURN) {
-            throw new EcmaScriptException("Unexpected " + 
-                    evaluationVisitor.getCompletionCodeString() + 
+            throw new EcmaScriptException("Unexpected " +
+                    evaluationVisitor.getCompletionCodeString() +
                     " in main program" );
         } else if (!acceptReturn) {
             throw new EcmaScriptException(
@@ -860,9 +897,9 @@ public class Evaluator {
     }
     return theValue;
   }
-  
-  
-  
+
+
+
   /**
    * subevaluator - Evaluate an event function - must be synchronized
    * @param sourceObject The source of the event (wrapped)
@@ -892,9 +929,9 @@ public class Evaluator {
    * @return The last value of the evaluation
    * @exception EmcaScriptException In case of any error during evaluation
    */
-   
+
   synchronized public ESValue evaluate(java.io.Reader is,
-                          ESObject thisObject, 
+                          ESObject thisObject,
                           EvaluationSource es,
                           boolean acceptReturn) throws EcmaScriptException {
     ESValue theValue = ESUndefined.theUndefined;
@@ -927,11 +964,11 @@ public class Evaluator {
         }
         throw new EcmaScriptLexicalException(e, es);
      }
-                    
+
      Vector variableList = varDeclarationVisitor.processVariableDeclarations(programNode, es);
 
      ParsedProgram program = new ParsedProgram(programNode, variableList, es);
-    
+
      theValue = evaluate(program, thisObject, acceptReturn);
 
      return theValue;
@@ -948,7 +985,7 @@ public class Evaluator {
     EvaluationSource es = new UserEvaluationSource("<Anonymous stream>", null);
     return evaluate (is, thisObject, es, false); // no return on anonymous streams
   }
-    
+
   /**
    * Top eval (synchronized) evaluate on anonymous stream with null thisObject
    * @param is Input stream to evaluate
@@ -958,7 +995,7 @@ public class Evaluator {
   synchronized public ESValue evaluate(Reader is) throws EcmaScriptException {
     return evaluate (is, null);
   }
-  
+
   /**
    * Top eval (synchronized) evaluate on an identified string (used by the GUI)
    * @param text source to evaluate
@@ -983,8 +1020,8 @@ public class Evaluator {
     }
     return v;
   }
-  
-    
+
+
 
   /**
    * Top eval (synchronized) evaluate a file
@@ -992,11 +1029,11 @@ public class Evaluator {
    * @return The last value of the evaluation
    * @exception EmcaScriptException In case of any error during evaluation
    */
-  synchronized public ESValue evaluate(File file) 
+  synchronized public ESValue evaluate(File file)
               throws EcmaScriptException, IOException {
       return evaluate(file, null);
   }
-  
+
   /**
    * Top eval (synchronized) evaluate a file
    * @param file file to evaluate
@@ -1004,7 +1041,7 @@ public class Evaluator {
    * @return The last value of the evaluation
    * @exception EmcaScriptException In case of any error during evaluation
    */
-  synchronized public ESValue evaluate(File file, ESObject thisObject) 
+  synchronized public ESValue evaluate(File file, ESObject thisObject)
               throws EcmaScriptException, IOException {
     EvaluationSource es = new FileEvaluationSource(file.getPath(), null);
     FileReader fr = null;
@@ -1022,16 +1059,16 @@ public class Evaluator {
     }
     return value;
   }
-  
+
   /**
-   * Top eval (synchronized) evaluate on an anonymous string 
+   * Top eval (synchronized) evaluate on an anonymous string
    * @param theSource source to evaluate
    * @return The last value of the evaluation
    * @exception EmcaScriptException In case of any error during evaluation
    */
   synchronized public ESValue evaluate(String theSource) throws EcmaScriptException {
        return evaluate(theSource, null, false);
-   } 
+   }
 
   //synchronized public ESValue evaluate(String theSource, ESObject thisObject) throws EcmaScriptException {
   //   return evaluate(theSource, thisObject, false); // No return allowed
@@ -1045,9 +1082,9 @@ public class Evaluator {
    * @return The last value of the evaluation
    * @exception EmcaScriptException In case of any error during evaluation
    */
-  synchronized public ESValue evaluate(String theSource, 
-                                       ESObject thisObject, 
-                                       boolean returnAccepted) 
+  synchronized public ESValue evaluate(String theSource,
+                                       ESObject thisObject,
+                                       boolean returnAccepted)
                            throws EcmaScriptException {
     java.io.StringReader is = null;
     ESValue v = null;

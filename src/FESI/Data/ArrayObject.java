@@ -17,9 +17,9 @@
 
 package FESI.Data;
 
-import java.util.Hashtable;
-import FESI.Exceptions.*;
-import FESI.Interpreter.*;
+import FESI.Exceptions.EcmaScriptException;
+import FESI.Exceptions.ProgrammingError;
+import FESI.Interpreter.Evaluator;
 
 /**
  * Implements the Array EcmaScript object. This is a singleton

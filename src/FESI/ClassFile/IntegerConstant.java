@@ -28,9 +28,6 @@ package FESI.ClassFile;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-import FESI.ClassFile.ClassFile;
-import FESI.ClassFile.ConstantPoolEntry;
-
 /**
  * <p> this class provides minimal support for the CONSTANT_INTEGER CPE </p>
  */

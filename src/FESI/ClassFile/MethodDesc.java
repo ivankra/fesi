@@ -29,10 +29,6 @@ package FESI.ClassFile;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-import FESI.ClassFile.ClassFile;
-import FESI.ClassFile.UTF8Constant;
-import FESI.ClassFile.Attribute;
-
 /**
  * <p> this class provides minimal support for method_info structures </p>
  */

@@ -17,13 +17,16 @@
 
 package FESI.Data;
 
-import FESI.jslib.*;
-import FESI.Exceptions.*;
-import FESI.Extensions.Extension;
+import java.io.Reader;
+
+import FESI.Exceptions.EcmaScriptException;
+import FESI.Exceptions.ProgrammingError;
 import FESI.Interpreter.Evaluator;
 import FESI.Interpreter.UserEvaluationSource;
-
-import java.io.Reader;
+import FESI.jslib.JSException;
+import FESI.jslib.JSFunction;
+import FESI.jslib.JSGlobalObject;
+import FESI.jslib.JSObject;
 
 /**
  * Package an EcmaScript object as a JSObject for use by the
@@ -45,7 +48,6 @@ public class JSWrapper implements JSObject {
        this.evaluator = evaluator;
     }
 
-    // overrides
     public ESObject getESObject() {
         return object;
     }

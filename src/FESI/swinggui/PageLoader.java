@@ -3,14 +3,15 @@
 
 package FESI.swinggui;
 
-import java.io.*;
-import java.lang.*;
-import java.net.*;
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.text.*;
+import java.awt.Container;
+import java.awt.Cursor;
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLConnection;
+
+import javax.swing.JEditorPane;
+import javax.swing.SwingUtilities;
+import javax.swing.text.Document;
 
 class PageLoader implements Runnable
 {

@@ -17,16 +17,29 @@
 
 package FESI.Data;
 
-import FESI.Exceptions.*;
-import FESI.Interpreter.*;
-
+import java.beans.BeanDescriptor;
+import java.beans.BeanInfo;
+import java.beans.EventSetDescriptor;
+import java.beans.IndexedPropertyDescriptor;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.MethodDescriptor;
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Member;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Enumeration;
 import java.util.Hashtable;
-import java.util.Vector;
-import java.util.EventListener;
 
-import java.lang.reflect.*;
-import java.beans.*;
+import FESI.Exceptions.EcmaScriptException;
+import FESI.Exceptions.ProgrammingError;
+import FESI.Interpreter.ClassInfo;
+import FESI.Interpreter.Evaluator;
+import FESI.Interpreter.EventAdaptor;
+import FESI.Interpreter.ScopeChain;
 
 
 /**
@@ -338,9 +351,12 @@ public class ESWrapper extends ESObject {
                return noPropertyMarker;
             }
             int modifiers = fld.getModifiers();
-            if ((theObject == null) != Modifier.isStatic(modifiers)) {
-                throw new EcmaScriptException("Field mode (static) not correct for "+ propertyName);
-            }
+//          The commented code below does not seems to be needed, as static fields
+//          can be accessed via their object. Maybe there was a limitation with
+//          a previous version?
+//            if ((theObject == null) != Modifier.isStatic(modifiers)) {
+//                throw new EcmaScriptException("Field mode (static) not correct for "+ propertyName);
+//            }
             if (!Modifier.isPublic(modifiers)) {
                 throw new EcmaScriptException("Field "+ propertyName + " not public");
             }
@@ -556,9 +572,12 @@ public class ESWrapper extends ESObject {
         }
         
         int modifiers = fld.getModifiers();
-        if ((theObject == null) != Modifier.isStatic(modifiers)) {
-              throw new EcmaScriptException("Field mode (static) not correct for "+ propertyName);
-        }
+//      The commented code below does not seems to be needed, as static fields
+//      can be accessed via their object. Maybe there was a limitation with
+//      a previous version?
+//        if ((theObject == null) != Modifier.isStatic(modifiers)) {
+//              throw new EcmaScriptException("Field mode (static) not correct for "+ propertyName);
+//        }
         if (!Modifier.isPublic(modifiers)) {
               throw new EcmaScriptException("Field "+ propertyName + " not public");
         }

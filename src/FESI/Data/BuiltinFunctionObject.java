@@ -17,9 +17,7 @@
 
 package FESI.Data;
 
-import java.util.Hashtable;
-import java.util.Vector;
-import FESI.Exceptions.*;
+import FESI.Exceptions.EcmaScriptException;
 import FESI.Interpreter.Evaluator;
 
 /**

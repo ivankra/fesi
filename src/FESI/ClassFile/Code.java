@@ -28,11 +28,7 @@ package FESI.ClassFile;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
-
 import java.util.Vector;
-
-import FESI.ClassFile.Attribute;
-import FESI.ClassFile.ClassConstant;
 
 /**
  * <p>

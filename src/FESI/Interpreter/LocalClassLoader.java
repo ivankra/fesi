@@ -17,18 +17,23 @@
 
 package FESI.Interpreter;
 
-import java.io.*;
+import java.awt.Image;
+import java.awt.Toolkit;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Hashtable;
 import java.util.Properties;
-import java.util.zip.*;
-import java.net.*;
-import java.awt.*;
-
-
-// import sun.awt.image.*;   // byte array image source
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import FESI.Data.ESLoader;
-import FESI.Exceptions.*;
+import FESI.Exceptions.EcmaScriptException;
 
 
 /**

@@ -27,10 +27,6 @@ package FESI.ClassFile;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-import FESI.ClassFile.ClassFile;
-import FESI.ClassFile.ConstantPoolEntry;
-import FESI.ClassFile.UTF8Constant;
-
 /**
  * <p>
  * The Attribute class is an abstract base class for all Attribute types

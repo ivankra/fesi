@@ -17,7 +17,11 @@
 
 package FESI.Tests;
 
-import java.beans.*;
+import java.beans.BeanDescriptor;
+import java.beans.IndexedPropertyDescriptor;
+import java.beans.IntrospectionException;
+import java.beans.PropertyDescriptor;
+import java.beans.SimpleBeanInfo;
 
 /**
  * File used by the validation suite

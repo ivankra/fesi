@@ -17,19 +17,13 @@
 
 package FESI.Data;
 
-import FESI.Exceptions.*;
-import FESI.Interpreter.*;
-
-import java.util.Date;
-import java.util.Enumeration;
-
-import java.lang.reflect.*;
-
-import java.io.*;
-import java.awt.event.*;
-import java.util.EventListener;
-import java.util.zip.*;
 import java.beans.Beans;
+import java.io.IOException;
+
+import FESI.Exceptions.EcmaScriptException;
+import FESI.Exceptions.ProgrammingError;
+import FESI.Interpreter.Evaluator;
+import FESI.Interpreter.LocalClassLoader;
 
 /**
  * Implements the beans loader
@@ -118,6 +112,7 @@ public class ESBeans extends ESLoader {
        }
        
        try {
+           
            Object bean = Beans.instantiate(classLoader, beanName);
            if (debugJavaAccess) {
                 System.out.println(" ** Bean '" + beanName + "' created");

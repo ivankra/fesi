@@ -1,0 +1,9 @@
+#! /bin/sh
+
+# Runs the FESI gui
+
+# Sets the IzPack home directory
+FESI_HOME='$INSTALL_PATH'
+
+# Does the effective launching
+java -classpath "${FESI_HOME}/lib/fesi.jar" "-DFESI.help=file:${INSTALL_PATH}/doc/html/index.html" FESI.Interpreter.Interpret -i -s "$@"

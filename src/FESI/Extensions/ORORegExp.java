@@ -17,15 +17,35 @@
 
 package FESI.Extensions;
 
-import FESI.Parser.*;
-import FESI.AST.*;
-import FESI.Interpreter.*;
-import FESI.Exceptions.*;
-import FESI.Data.*;
+import java.util.ArrayList;
 
-import java.util.Vector;
+import FESI.Data.ArrayPrototype;
+import FESI.Data.BuiltinFunctionObject;
+import FESI.Data.ESBoolean;
+import FESI.Data.ESNull;
+import FESI.Data.ESNumber;
+import FESI.Data.ESObject;
+import FESI.Data.ESPrimitive;
+import FESI.Data.ESString;
+import FESI.Data.ESValue;
+import FESI.Data.FunctionPrototype;
+import FESI.Data.GlobalObject;
+import FESI.Data.ObjectPrototype;
+import FESI.Exceptions.EcmaScriptException;
+import FESI.Interpreter.Evaluator;
+import FESI.Interpreter.ScopeChain;
 
-import com.oroinc.text.regex.*;
+import org.apache.oro.text.regex.MalformedPatternException;
+import org.apache.oro.text.regex.MatchResult;
+import org.apache.oro.text.regex.Pattern;
+import org.apache.oro.text.regex.PatternCompiler;
+import org.apache.oro.text.regex.PatternMatcher;
+import org.apache.oro.text.regex.PatternMatcherInput;
+import org.apache.oro.text.regex.Perl5Compiler;
+import org.apache.oro.text.regex.Perl5Matcher;
+import org.apache.oro.text.regex.Perl5Substitution;
+import org.apache.oro.text.regex.Substitution;
+import org.apache.oro.text.regex.Util;
 
 
 /**
@@ -271,6 +291,7 @@ public class ORORegExp extends Extension {
                    
         go.putHiddenProperty("RegExp", globalObjectRegExp);
         
+        
         class StringPrototypeSearch extends BuiltinFunctionObject {
             StringPrototypeSearch(String name, Evaluator evaluator, FunctionPrototype fp) {
                 super(fp, evaluator, name, 1);
@@ -316,9 +337,9 @@ public class ORORegExp extends Extension {
                     throw new EcmaScriptException("The replace argument must be a RegExp");
                 }
                 String replacement = arguments[1].toString();
-                // USE DEPRECATED ROUTINE BECAUSE I AM LAZY
-                String result = Util.substitute(matcher, pattern.getPattern(), replacement, str, 
-                        pattern.isGlobal() ? Util.SUBSTITUTE_ALL : 1, Util.INTERPOLATE_ALL);
+                Substitution substitution = new Perl5Substitution(replacement);
+                String result = Util.substitute(matcher, pattern.getPattern(), substitution, str, 
+                                pattern.isGlobal() ? Util.SUBSTITUTE_ALL : 1);
                 return new ESString(result);
             }
         }
@@ -384,12 +405,13 @@ public class ORORegExp extends Extension {
                         if (arguments.length>1) {
                             n = arguments[1].toUInt32();
                         }
-                        Vector result = Util.split(matcher, pattern.getPattern(), str, n);
+                        ArrayList result = new ArrayList();
+                        Util.split(result, matcher, pattern.getPattern(), str, n);
                         int l = result.size();
                         theArray.setSize(l);
                         for (int i=0; i<l; i++) {
                             theArray.setElementAt( 
-                                       new ESString((String)result.elementAt(i)), i);                                
+                                       new ESString((String)result.get(i)), i);                                
                         }
                         
                     } else { // ! instanceof ESORORegExp
@@ -430,6 +452,8 @@ public class ORORegExp extends Extension {
                new StringPrototypeMatch("match", evaluator, fp));
         stringPrototype.putHiddenProperty("split",
                new StringPrototypeSplit("split", evaluator, fp));
+        
+        OptionalRegExp.setLoadedRegExp(this);
 
      }
  }

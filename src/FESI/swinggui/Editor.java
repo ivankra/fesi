@@ -17,20 +17,41 @@
  
 package FESI.swinggui;
 
-import FESI.gui.*;
+import java.awt.BorderLayout;
+import java.awt.Container;
+import java.awt.Event;
+import java.awt.FileDialog;
+import java.awt.Font;
+import java.awt.Frame;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
 
-import FESI.Exceptions.*;
+import javax.swing.BorderFactory;
+import javax.swing.JComponent;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JViewport;
+import javax.swing.KeyStroke;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import javax.swing.text.PlainDocument;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.beans.*;
-import java.io.*;
-import java.net.URL;
-
-import javax.swing.text.*;
-import javax.swing.undo.*;
-import javax.swing.event.*;
-import javax.swing.*;
+import FESI.Exceptions.ProgrammingError;
 
 /**
  * Simplistic editor for FESI
@@ -98,8 +119,7 @@ public class Editor extends JPanel {
      */
     boolean checkDirty() {
       if (dirty) {
-         JOptionPane dialog = new JOptionPane();
-         int result = dialog.showConfirmDialog(this,   
+         int result = JOptionPane.showConfirmDialog(this,   
                "Save changes in " + getWindowBaseTitle()  + " ?", 
                "FESI Editor",
                JOptionPane.YES_NO_CANCEL_OPTION,

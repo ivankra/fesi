@@ -17,8 +17,9 @@
 
 package FESI.jslib;
 
-import FESI.Exceptions.*;
-import java.io.*;
+import java.io.PrintWriter;
+
+import FESI.Exceptions.EcmaScriptException;
 
 /**
  * Thrown when the EcmaScript interpreter detect an error. Package

@@ -25,8 +25,6 @@
 
 package FESI.ClassFile;
 
-import FESI.ClassFile.ClassFile;
-import FESI.ClassFile.RefConstant;
 
 /**
  * <p> this class provides minimal support for CONSTANT_INTERFACEMETHODREF CPE's </p>

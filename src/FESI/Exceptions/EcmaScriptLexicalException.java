@@ -17,8 +17,9 @@
 
 package FESI.Exceptions;
 
-import FESI.Parser.*;
-import FESI.Interpreter.*;
+import FESI.Interpreter.EvaluationSource;
+import FESI.Parser.EcmaScriptConstants;
+import FESI.Parser.TokenMgrError;
 
 /**
  * Exception used to signal lexical error during parsing

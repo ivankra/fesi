@@ -17,12 +17,13 @@
 
 package FESI.Data;
 
-import FESI.Exceptions.*;
-import FESI.Interpreter.*;
-
-import java.util.Vector;
-import java.util.Enumeration;
 import java.lang.reflect.Array;
+import java.util.Enumeration;
+import java.util.Vector;
+
+import FESI.Exceptions.EcmaScriptException;
+import FESI.Interpreter.Evaluator;
+import FESI.Interpreter.ScopeChain;
 
 /**
  * Implements the prototype and is the class of all Array objects

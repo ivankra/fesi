@@ -17,8 +17,12 @@
 
 package FESI.awtgui;
 
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.Canvas;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
 import java.util.StringTokenizer;
 
 // This example is from _Java Examples in a Nutshell_. (http://www.oreilly.com)

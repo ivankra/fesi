@@ -36,7 +36,8 @@ public class TestJavaBean {
     public int visible = 3; // Magic value, checked by test program
 
     // To test access of a public field with setter/getter when used
-    // as a bean or as a field. Not the minus to test if access was
+    // as a bean or as a field. Note the minus in getBoth()
+    // to test if access was
     // via setter/getter or directly.
     public int both = 5; // Magic value, checked by test program
     public void setBoth(int x) {

@@ -17,8 +17,9 @@
 
 package FESI.Data;
 
-import java.util.Hashtable;
-import FESI.Exceptions.*;
+import FESI.Exceptions.EcmaScriptException;
+import FESI.Exceptions.EcmaScriptParseException;
+import FESI.Exceptions.ProgrammingError;
 import FESI.Interpreter.Evaluator;
 
 /**
@@ -443,6 +444,7 @@ public class GlobalObject extends ObjectPrototype {
 
             go.putHiddenProperty("NaN", new ESNumber(Double.NaN));
             go.putHiddenProperty("Infinity", new ESNumber(Double.POSITIVE_INFINITY));
+            go.putHiddenProperty("undefined", ESUndefined.theUndefined);
             go.putHiddenProperty("Array", ArrayObject.makeArrayObject(evaluator, objectPrototype, functionPrototype));
             go.putHiddenProperty("Math", MathObject.makeMathObject(evaluator, objectPrototype, functionPrototype));
         

@@ -17,9 +17,11 @@
 
 package FESI.Exceptions;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Vector;
-import FESI.Interpreter.*;
-import java.io.*;
+
+import FESI.Interpreter.EvaluationSource;
 
 /**
  * Superclass of all common exceptions used by the FESI system

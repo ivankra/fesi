@@ -18,7 +18,6 @@
 package FESI.Data;
 
 import FESI.Interpreter.Evaluator;
-import FESI.Exceptions.*;
 
 /**
  * Implements the prototype and is the class of all Object objects.

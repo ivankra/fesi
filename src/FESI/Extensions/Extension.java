@@ -17,8 +17,8 @@
 
 package FESI.Extensions;
 
-import FESI.Interpreter.*;
-import FESI.Exceptions.*;
+import FESI.Exceptions.EcmaScriptException;
+import FESI.Interpreter.Evaluator;
 
 public abstract class  Extension {
     abstract public void initializeExtension(Evaluator evaluator)

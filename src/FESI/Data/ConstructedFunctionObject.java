@@ -17,11 +17,14 @@
 
 package FESI.Data;
 
-import java.util.Hashtable;
 import java.util.Vector;
-import FESI.Exceptions.*;
+
 import FESI.AST.ASTStatementList;
-import FESI.Interpreter.*;
+import FESI.Exceptions.EcmaScriptException;
+import FESI.Exceptions.ProgrammingError;
+import FESI.Interpreter.EvaluationSource;
+import FESI.Interpreter.Evaluator;
+import FESI.Interpreter.ScopeChain;
 
 /**
  * Implements functions constructed from source text

@@ -17,14 +17,20 @@
 
 package FESI.Interpreter;
 
+import java.beans.BeanInfo;
+import java.beans.IndexedPropertyDescriptor;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.MethodDescriptor;
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import java.lang.reflect.*;
-import java.beans.*;
-
-import FESI.Data.*;
-import FESI.Exceptions.*;
+import FESI.Data.ESLoader;
+import FESI.Exceptions.EcmaScriptException;
+import FESI.Exceptions.ProgrammingError;
 
 /**
  * This class contains the static routines to access the cache of class information

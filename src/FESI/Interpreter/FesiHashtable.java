@@ -30,9 +30,9 @@
 
 package FESI.Interpreter;
 
-import FESI.Data.ESValue;
-
 import java.util.Enumeration;
+
+import FESI.Data.ESValue;
 
 /**
  * Hashtable collision list.

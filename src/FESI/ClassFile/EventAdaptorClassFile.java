@@ -24,33 +24,11 @@
 
 package FESI.ClassFile;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
-
 import java.io.IOException;
-
+import java.io.OutputStream;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 
-import java.util.Vector;
-
-import FESI.Interpreter.EventAdaptor;
 import FESI.Interpreter.EventAdaptorGenerator;
-
-import FESI.ClassFile.Attribute;
-import FESI.ClassFile.ClassFile;
-import FESI.ClassFile.ClassConstant;
-import FESI.ClassFile.Code;
-import FESI.ClassFile.ConstantPoolEntry;
-import FESI.ClassFile.Exceptions;
-import FESI.ClassFile.IntegerConstant;
-import FESI.ClassFile.FieldDesc;
-import FESI.ClassFile.FieldConstant;
-import FESI.ClassFile.MethodDesc;
-import FESI.ClassFile.MethodConstant;
-import FESI.ClassFile.StringConstant;
 
 /**
  * <p>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+
+<shortcuts>
+
+  <programGroup defaultName="Fesi" location="applications"/>
+  
+  <shortcut
+     name="Fesi"
+     programGroup="yes"
+     desktop="yes"
+     applications="no"
+     startMenu="no"
+     startup="no"
+     target="$INSTALL_PATH\bin\fesi.bat"
+     commandLine=""
+     description="Fesi GUI"
+     iconFile="$INSTALL_PATH\bin\icons\fesi.ico"
+     iconIndex="0"
+     initialState="noShow">
+   
+     <createForPack name="Core"/>
+     
+   </shortcut>
+
+   <shortcut
+     name="Documentation"
+     programGroup="yes"
+     desktop="no"
+     applications="no"
+     startMenu="no"
+     startup="no"
+     target="$INSTALL_PATH\doc\html\docindex.html"
+     commandLine=""
+     description="Fesi user documentation (HTML format)">
+     <createForPack name="Core" />
+   </shortcut>
+   
+   <shortcut
+     name="Uninstaller"
+     programGroup="yes"
+     desktop="no"
+     applications="no"
+     startMenu="no"
+     startup="no"
+     target="$INSTALL_PATH\Uninstaller\uninstaller.jar"
+     commandLine=""
+     description="Fesi uninstaller">
+     
+     <createForPack name="Core" />
+   </shortcut>
+   
+</shortcuts>

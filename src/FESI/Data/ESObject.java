@@ -17,33 +17,34 @@
 
 package FESI.Data;
 
-import FESI.Exceptions.*;
+import java.util.Enumeration;
+
+import FESI.Exceptions.EcmaScriptException;
+import FESI.Exceptions.ProgrammingError;
 import FESI.Interpreter.Evaluator;
 import FESI.Interpreter.FesiHashtable;
 import FESI.Interpreter.ScopeChain;
-
-import java.util.Enumeration;
 
 public abstract class ESObject extends ESValue {
 
     /** Contains the properties of this object */
     protected FesiHashtable properties;
-    
+
     /** The evaluator owning this object */
     protected Evaluator evaluator;
 
-    /** 
-     * The prototype of this object ([[prototype]] in the standard,  
-     * not the "prototype" property of functions!) 
+    /**
+     * The prototype of this object ([[prototype]] in the standard,
+     * not the "prototype" property of functions!)
      */
     private ESObject prototype = null;
-    
+
     // Prepare common names and their hash value
     static private final String TOSTRINGstring = ("toString").intern();
     static private final int TOSTRINGhash = TOSTRINGstring.hashCode();
     static private final String VALUEOFstring = ("valueOf").intern();
     static private final int VALUEOFhash = VALUEOFstring.hashCode();
-    	
+
 
     /**
      * Create an object with a specific prototype (which may be null)
@@ -58,8 +59,8 @@ public abstract class ESObject extends ESValue {
         this.properties = new FesiHashtable();
         this.evaluator = evaluator; // It will crash somewhere if null...
     }
-	
-    
+
+
 
     /**
      * Create an object with a specific prototype (which may be null)
@@ -93,7 +94,7 @@ public abstract class ESObject extends ESValue {
     public final boolean isPrimitive() {
         return false;
     }
-    
+
 
     /**
      * Implements the [[prototype]] property (see 8.6.2)
@@ -103,24 +104,24 @@ public abstract class ESObject extends ESValue {
     public ESObject getPrototype() {
         return prototype;
     }
-    
+
 
     /**
      * Return the name of the class of objects ([[class]]), as used in the default toString
      * method of objects (15.2.4.2)
      *
-     * @return the [[Class]] property of this object    
+     * @return the [[Class]] property of this object
      */
     public String getESClassName() {
         return "Object";
     }
-    
+
 
     /**
      * Return a code indicating the type of the object for the implementation
      * of the "==" operator.
      *
-     * @return  A type code   
+     * @return  A type code
      */
     public int getTypeOf() {
        return EStypeObject;
@@ -140,21 +141,51 @@ public abstract class ESObject extends ESValue {
      * @return     The value of the specified variable
      * @exception   EcmaScriptException  if not found in any scope
      */
-    public ESValue getPropertyInScope(String propertyName, 
-                               ScopeChain previousScope, 
-                               int hash) 
+//    public ESValue getPropertyInScope(String propertyName,
+//                               ScopeChain previousScope,
+//                               int hash)
+//                throws EcmaScriptException {
+//       ESValue value = getProperty(propertyName, hash);
+//       if (value == ESUndefined.theUndefined) {
+//        //   ESValue value = (ESValue) properties.get(propertyName, hash); - Pre 1.1.6, a bug
+// //       if (value == null) {
+//            if (previousScope == null) {
+//                throw new EcmaScriptException("global variable '" + propertyName + "' does not have a value");
+//            } else {
+//                value = previousScope.getValue(propertyName, hash);
+//            }
+//        }
+//        return value;
+//    }
+    public ESValue getPropertyInScope(String propertyName,
+                               ScopeChain previousScope,
+                               int hash)
                 throws EcmaScriptException {
-        ESValue value = (ESValue) properties.get(propertyName, hash);
-        if (value == null) {
-            if (previousScope == null) {
-                throw new EcmaScriptException("global variable '" + propertyName + "' does not have a value");
-            } else {
-                value = previousScope.getValue(propertyName, hash);
-            }
+       // We directly attempt to get a value, without trying
+       // if there is such a property first (for performance reasons)
+       // If there is no property, 'undefined' is returned
+       ESValue value = getProperty(propertyName, hash);
+
+       if (value == ESUndefined.theUndefined) {
+           // Here there are two cases - there was no property
+           // with that name (and we must
+           // lookup in the previous scope), or there was one
+           // but with a value of 'undefined', and we must return
+           // undefined. Currently the only way to find out if to
+           // check directly (that makes a second table lookup).
+           boolean hasTheProperty = properties.containsKey(propertyName, hash);
+
+           if (!hasTheProperty) {
+               if (previousScope == null) {
+                   throw new EcmaScriptException("global variable '" + propertyName + "' does not have a value");
+               } else {
+                   value = previousScope.getValue(propertyName, hash);
+               }
+           }
         }
         return value;
     }
-    
+
     /**
      * Get the property by name (see 8.6.2.1) propagating to
      * the prototype if required
@@ -164,7 +195,7 @@ public abstract class ESObject extends ESValue {
      * @return     The property or <em>undefined</em>
      * @exception   EcmaScriptException  Error in host objects ?
      */
-    public ESValue getProperty(String propertyName, int hash) 
+    public ESValue getProperty(String propertyName, int hash)
                             throws EcmaScriptException {
         ESValue value = (ESValue) properties.get(propertyName, hash);
         if (value == null) {
@@ -176,7 +207,7 @@ public abstract class ESObject extends ESValue {
         }
         return value;
     }
-    
+
 
     /**
      * Get the property by index value. By default the index is
@@ -190,13 +221,13 @@ public abstract class ESObject extends ESValue {
      * @return     The property or <em>undefined</em>
      * @exception   EcmaScriptException  Error in host objects ?
      */
-    public ESValue getProperty(int index) 
+    public ESValue getProperty(int index)
                             throws EcmaScriptException {
         String iString = Integer.toString(index);
         return getProperty(iString, iString.hashCode());
     }
 
-    public boolean hasProperty(String propertyName, int hash) 
+    public boolean hasProperty(String propertyName, int hash)
                             throws EcmaScriptException {
         boolean found = properties.containsKey(propertyName, hash);
         if (!found && prototype != null) {
@@ -204,12 +235,12 @@ public abstract class ESObject extends ESValue {
         }
         return found;
     }
-    
+
     public boolean isHiddenProperty(String propertyName, int hash) {
         return properties.isHidden(propertyName, hash);
     }
-    
-    /** 
+
+    /**
      * Indicates that the getProperties return an enumerator to the
      * index rather  rather than to the value index (see ESWrapper).
      *
@@ -218,14 +249,14 @@ public abstract class ESObject extends ESValue {
     public boolean isDirectEnumerator() {
         return false;
     }
-    
+
     /**
      * Returns an enumerator for the key elements of this object,
      * that is all is enumerable properties and the (non hidden)
-     * ones of its prototype, etc... As used for the for in 
+     * ones of its prototype, etc... As used for the for in
      * statement.
      *
-     * @return the enumerator 
+     * @return the enumerator
      */
    public Enumeration getProperties() {
          return new Enumeration() {
@@ -243,7 +274,7 @@ public abstract class ESObject extends ESValue {
                        } else {
                           if (isHiddenProperty(currentKey, currentHash)) continue;
                        }
-                       return true;  
+                       return true;
                     }
                     if (!inside && prototype != null) {
                         inside = true;
@@ -252,7 +283,7 @@ public abstract class ESObject extends ESValue {
                            currentKey = (String) props.nextElement();
                            currentHash = currentKey.hashCode();
                            if (properties.containsKey(currentKey, currentHash)) continue;
-                           return true;  
+                           return true;
                         }
                     }
                     return false;
@@ -261,14 +292,14 @@ public abstract class ESObject extends ESValue {
                     if (hasMoreElements()) {
                        String key = currentKey;
                        currentKey = null;
-                       return key; 
+                       return key;
                      } else {
                          throw new java.util.NoSuchElementException();
                      }
                  }
          };
       }
-    
+
 
     /**
      * Get all properties (including hidden ones), for the command
@@ -277,7 +308,7 @@ public abstract class ESObject extends ESValue {
      * hidden ones of the prototype (otherwise this would list
      * all functions for any object).
      *
-     * @return An enumeration of all properties (visible and hidden).  
+     * @return An enumeration of all properties (visible and hidden).
      */
     public Enumeration getAllProperties() {
          return new Enumeration() {
@@ -305,7 +336,7 @@ public abstract class ESObject extends ESValue {
                           if (properties.containsKey(currentKey, currentHash)) continue;
                           // SHOULD CHECK IF NOT IN SPECIAL
                        }
-                       return true;  
+                       return true;
                     }
                     // If prototype properties have not yet been examined, look for them
                     if (!inside && prototype != null) {
@@ -315,7 +346,7 @@ public abstract class ESObject extends ESValue {
                            currentKey = (String) props.nextElement();
                            currentHash = currentKey.hashCode();
                            if (properties.containsKey(currentKey, currentHash)) continue;
-                           return true;  
+                           return true;
                         }
                     }
                     return false;
@@ -324,7 +355,7 @@ public abstract class ESObject extends ESValue {
                     if (hasMoreElements()) {
                        String key = currentKey;
                        currentKey = null;
-                       return key; 
+                       return key;
                      } else {
                          throw new java.util.NoSuchElementException();
                      }
@@ -343,13 +374,13 @@ public abstract class ESObject extends ESValue {
      * @param   propertyValue  The value to put
      * @exception   EcmaScriptException  Error in host objects ?
      */
-    public void putProperty(String propertyName, 
-                            ESValue propertyValue, 
-                            int hash) 
+    public void putProperty(String propertyName,
+                            ESValue propertyValue,
+                            int hash)
                                 throws EcmaScriptException {
         properties.put(propertyName, hash, false, false, propertyValue);
     }
-    
+
 
     /**
      * Put the property by index value. By default the index is
@@ -363,27 +394,27 @@ public abstract class ESObject extends ESValue {
      * @param   propertyValue  The value to put
      * @exception   EcmaScriptException  Error in host objects ?
      */
-    public void putProperty(int index, ESValue propertyValue) 
+    public void putProperty(int index, ESValue propertyValue)
                                 throws EcmaScriptException {
         String iString = Integer.toString(index);
         putProperty(iString, propertyValue, iString.hashCode());
     }
-    
-    
+
+
 
     /**
      * Put the property as hidden. This is mostly used by initialization
      * code, so a hash value is computed localy and the string is interned.
      *
      * @param   propertyName  The name of the property
-     * @param   propertyValue Its value 
+     * @param   propertyValue Its value
      * @exception   EcmaScriptException  Not used
      */
-    public void putHiddenProperty(String propertyName, 
-                                  ESValue propertyValue) 
+    public void putHiddenProperty(String propertyName,
+                                  ESValue propertyValue)
                                 throws EcmaScriptException {
-        propertyName = propertyName.intern();    
-        int hash = propertyName.hashCode();                      
+        propertyName = propertyName.intern();
+        int hash = propertyName.hashCode();
         properties.put(propertyName, hash, true, false, propertyValue);
     }
 
@@ -397,19 +428,19 @@ public abstract class ESObject extends ESValue {
      *
      * @param   propertyName  The name of the property
      * @return     true if the property is not present anymore
-     * @exception   EcmaScriptException Not used 
+     * @exception   EcmaScriptException Not used
      */
-    public boolean deleteProperty(String propertyName, int hash) 
+    public boolean deleteProperty(String propertyName, int hash)
                                 throws EcmaScriptException {
         properties.remove(propertyName, hash);
         return true; // either it did not exist or was deleted !
     }
-    
+
     /**
      * Implements [[DefaultValue]] with hint
      *
      * @param hint A type hint (only string or number)
-     
+
      * @exception EcmaScriptException Propagated or bad hint
      * @return the default value of this object
      */
@@ -417,7 +448,7 @@ public abstract class ESObject extends ESValue {
                                 throws EcmaScriptException {
         ESValue theResult = null;
         ESValue theFunction = null;
-        
+
         if (hint == ESValue.EStypeString) {
             theFunction = this.getProperty(TOSTRINGstring,TOSTRINGhash);
             if (theFunction instanceof ESObject) {
@@ -462,27 +493,27 @@ public abstract class ESObject extends ESValue {
      * @exception EcmaScriptException Propagated
      * @return the default value of this object
      */
-    public ESValue getDefaultValue() 
+    public ESValue getDefaultValue()
                                 throws EcmaScriptException {
- 
+
         return this.getDefaultValue(EStypeNumber);
     }
-    
+
 
     /**
      * Call a function object - not implemented for default objecr
      *
      * @param   thisObject  The current object
      * @param   arguments  The arguments to the function
-     * @return   The calculated value  
+     * @return   The calculated value
      * @exception   EcmaScriptException  thrown because the function is not implemented
      */
-    public ESValue callFunction(ESObject thisObject, 
-                               ESValue[] arguments) 
+    public ESValue callFunction(ESObject thisObject,
+                               ESValue[] arguments)
                                         throws EcmaScriptException {
          throw new EcmaScriptException("No function defined on: " + this);
-    }    
-    
+    }
+
 
     /**
      * A construct as thisObject.functionName() was detected,
@@ -495,16 +526,16 @@ public abstract class ESObject extends ESValue {
      *
      * @param   evaluator  The evaluator
      * @param target The original target (for recursive calls)
-     * @param   functionName The name of the function property 
-     * @param   arguments The arguments of the function 
-     * @return  The result of calling the function  
+     * @param   functionName The name of the function property
+     * @param   arguments The arguments of the function
+     * @return  The result of calling the function
      * @exception   EcmaScriptException  Function not defined
      * @exception NoSuchMethodException Method not found
      */
     public ESValue doIndirectCall(Evaluator evaluator,
     				    ESObject target,
                                   String functionName,
-                                  ESValue[] arguments) 
+                                  ESValue[] arguments)
                                         throws EcmaScriptException, NoSuchMethodException {
         ESValue theFunction = (ESValue) properties.get(functionName, functionName.hashCode());
         if (theFunction == null) {
@@ -523,10 +554,10 @@ public abstract class ESObject extends ESValue {
     // property must override this function
     public ESValue doIndirectCallInScope(Evaluator evaluator,
                                         ScopeChain previousScope,
-                                        ESObject thisObject, 
+                                        ESObject thisObject,
                                         String functionName,
-                                        int hash, 
-                                        ESValue[] arguments) 
+                                        int hash,
+                                        ESValue[] arguments)
                                         throws EcmaScriptException {
         ESValue theFunction = (ESValue) properties.get(functionName, hash);
         if (theFunction == null) {
@@ -547,19 +578,19 @@ public abstract class ESObject extends ESValue {
      * @return     The created obbjecr
      * @exception   EcmaScriptException  thrown because this function is not implemented
      */
-    public ESObject doConstruct(ESObject thisObject, 
-                                ESValue[] arguments) 
+    public ESObject doConstruct(ESObject thisObject,
+                                ESValue[] arguments)
                                         throws EcmaScriptException {
          throw new EcmaScriptException("No constructor defined on: " + this);
-    }    
-    
-    
-    
+    }
+
+
+
 
     /**
      * Return a double value for this object if possible
      *
-     * @return  The double value   
+     * @return  The double value
      * @exception   EcmaScriptException  If not a suitable primitive
      */
     public double doubleValue() throws EcmaScriptException {
@@ -573,18 +604,18 @@ public abstract class ESObject extends ESValue {
         }
         return d;
     }
-    
+
 
     /**
      * Return the boolean value of this object if possible
      *
-     * @return  the boolean value   
-     * @exception   EcmaScriptException If not a suitable primitive 
+     * @return  the boolean value
+     * @exception   EcmaScriptException If not a suitable primitive
      */
     public boolean booleanValue() throws EcmaScriptException {
         return true;
     }
-    
+
     public String toString() {
         ESValue value = ESUndefined.theUndefined;
         String string = null;
@@ -601,63 +632,63 @@ public abstract class ESObject extends ESValue {
     /**
      * Convert to an object
      *
-     * @param   evaluator The evaluator  
-     * @return  This   
+     * @param   evaluator The evaluator
+     * @return  This
      * @exception   EcmaScriptException  not thrown
      */
     public final ESValue toESObject(Evaluator evaluator) throws EcmaScriptException {
         return this;
     }
-    
+
 
     /**
      * Convert to a primitive
      *
-     * @param   preferedType For string or number  
-     * @return    The primitive value 
-     * @exception   EcmaScriptException If no suitable default value 
+     * @param   preferedType For string or number
+     * @return    The primitive value
+     * @exception   EcmaScriptException If no suitable default value
      */
     public final ESValue toESPrimitive(int preferedType) throws EcmaScriptException {
         return getDefaultValue(preferedType);
     }
-    
+
 
     /**
      * Convert to a primitive
      *
-     * @return    The primitive value 
-     * @exception   EcmaScriptException If no suitable default value 
+     * @return    The primitive value
+     * @exception   EcmaScriptException If no suitable default value
      */
     public final ESValue toESPrimitive() throws EcmaScriptException {
         return getDefaultValue();
     }
-    
+
     /**
      * Return a Java object which is the object to pass to Java routines
      * called by FESI. By default wrap the ESObject in a wrapper object,
      * used by the jslib. Overriden by subclass if a better type can be found.
      *
-     * @return   a wrapper object over this ESObject. 
+     * @return   a wrapper object over this ESObject.
      */
     public Object toJavaObject() {
         return new JSWrapper(this, evaluator);
     }
 
-     
+
 
     /**
      * Return the name of the type of the object for the typeof operator
      *
-     * @return  The name of the type as a String   
+     * @return  The name of the type as a String
      */
     public String getTypeofString() {
         return "object";
     }
-  
+
     public String toDetailString() {
         return "ES:[" + getESClassName() + "]";
     }
-    
+
     /**
      * Return true to indicate that this value is composite.
      *
@@ -665,7 +696,7 @@ public abstract class ESObject extends ESValue {
      */
     public boolean isComposite() {return true; }
 
-    
+
     /**
      * Return the list of proprties which are not listed by getAll,
      * that is all special properties handled directly by getProperty,
@@ -674,7 +705,7 @@ public abstract class ESObject extends ESValue {
      * Must be overriden by a subclass which overrides getProperty!
      *
      * return The array of special property names
-     */    
+     */
     public String[] getSpecialPropertyNames() {
         return new String[0];
     }
@@ -710,7 +741,7 @@ public abstract class ESObject extends ESValue {
                        //if (inside) {
                        //   if (properties.containsKey(currentKey, currentHash)) continue;
                        //}
-                       return true;  
+                       return true;
                     }
                     // Got to prototype enumeration if needed
                     if (!inside && prototype != null) {
@@ -720,7 +751,7 @@ public abstract class ESObject extends ESValue {
                            currentKey = (String) props.nextElement();
                            currentHash = currentKey.hashCode();
                            //if (properties.containsKey(currentKey, currentHash)) continue;
-                           return true;  
+                           return true;
                         }
                     }
                     return false;
@@ -745,10 +776,10 @@ public abstract class ESObject extends ESValue {
                           propertyKind = isHiddenProperty(key, hash) ? "HIDDEN" : "VISIBLE";
                        }
                        propertyKind += (inside ? " PROTOTYPE" : " OBJECT");
-                       propertyKind += " PROPERTY"; 
+                       propertyKind += " PROPERTY";
                        return new ValueDescription(key,
                                     propertyKind,
-                                    value.toString()); 
+                                    value.toString());
                      } else {
                          throw new java.util.NoSuchElementException();
                      }
@@ -762,7 +793,7 @@ public abstract class ESObject extends ESValue {
      *
      * @param name The name of the value to describe
      *
-     * @return   the description of this value  
+     * @return   the description of this value
      */
     public ValueDescription getDescription(String name) {
        return new ValueDescription(name,

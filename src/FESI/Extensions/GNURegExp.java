@@ -18,15 +18,28 @@
 
 package FESI.Extensions;
 
-import FESI.Parser.*;
-import FESI.AST.*;
-import FESI.Interpreter.*;
-import FESI.Exceptions.*;
-import FESI.Data.*;
+import gnu.regexp.RE;
+import gnu.regexp.REException;
+import gnu.regexp.REMatch;
+import gnu.regexp.RESyntax;
 
 import java.util.Vector;
 
-import gnu.regexp.*;
+import FESI.Data.ArrayPrototype;
+import FESI.Data.BuiltinFunctionObject;
+import FESI.Data.ESBoolean;
+import FESI.Data.ESNull;
+import FESI.Data.ESNumber;
+import FESI.Data.ESObject;
+import FESI.Data.ESPrimitive;
+import FESI.Data.ESString;
+import FESI.Data.ESValue;
+import FESI.Data.FunctionPrototype;
+import FESI.Data.GlobalObject;
+import FESI.Data.ObjectPrototype;
+import FESI.Exceptions.EcmaScriptException;
+import FESI.Interpreter.Evaluator;
+import FESI.Interpreter.ScopeChain;
 
 /**
   * An EcmaScript RegExp  object based on GNU pattern matcher.
@@ -563,5 +576,7 @@ public class GNURegExp extends Extension
 			new StringPrototypeMatch("match", evaluator, fp));
 		stringPrototype.putHiddenProperty("split",
 			new StringPrototypeSplit("split", evaluator, fp));
+            
+        OptionalRegExp.setLoadedRegExp(this);
 	}
 }

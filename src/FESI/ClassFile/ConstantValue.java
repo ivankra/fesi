@@ -28,15 +28,6 @@ package FESI.ClassFile;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-import FESI.ClassFile.Attribute;
-import FESI.ClassFile.ClassFile;
-import FESI.ClassFile.ConstantPoolEntry;
-import FESI.ClassFile.IntegerConstant;
-import FESI.ClassFile.FloatConstant;
-import FESI.ClassFile.DoubleConstant;
-import FESI.ClassFile.LongConstant;
-import FESI.ClassFile.StringConstant;
-
 /**
  * <p>
  * This class provides Constant Pool support for all the simple constant

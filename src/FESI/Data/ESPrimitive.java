@@ -17,7 +17,7 @@
 
 package FESI.Data;
 
-import FESI.Exceptions.*;
+import FESI.Exceptions.EcmaScriptException;
 
 /**
  * This is the superclass of all primitive values (non object)

@@ -17,19 +17,14 @@
 
 package FESI.Data;
 
-import FESI.Exceptions.*;
-import FESI.Interpreter.*;
-import FESI.jslib.JSFunction;
-
 import java.util.Date;
-import java.util.Enumeration;
 
-import java.lang.reflect.*;
-
-import java.io.*;
-import java.awt.event.*;
-import java.util.EventListener;
-import java.util.zip.*;
+import FESI.Exceptions.EcmaScriptException;
+import FESI.Exceptions.ProgrammingError;
+import FESI.Interpreter.Evaluator;
+import FESI.Interpreter.LocalClassLoader;
+import FESI.Interpreter.ScopeChain;
+import FESI.jslib.JSFunction;
 
 /**
  * Implements the common functionality of package(object) and beans loaders

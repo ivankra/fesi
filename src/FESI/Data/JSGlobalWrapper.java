@@ -17,10 +17,11 @@
 
 package FESI.Data;
 
-import FESI.jslib.*;
-import FESI.Exceptions.*;
-import FESI.Extensions.Extension;
+import FESI.Exceptions.ProgrammingError;
 import FESI.Interpreter.Evaluator;
+import FESI.jslib.JSException;
+import FESI.jslib.JSGlobalObject;
+import FESI.jslib.JSObject;
 
 /**
  * Package an EcmaScript object as a JSObject for use by the
@@ -45,6 +46,7 @@ public class JSGlobalWrapper extends JSWrapper implements JSGlobalObject {
      * 'this' object.
      *
      * @param object The object to wrap.
+     * @return A JSObject that can be pass to FESI to represent the wrapped object.
      */
     public JSObject makeObjectWrapper(Object object) {
        synchronized (evaluator) {
@@ -64,12 +66,39 @@ public class JSGlobalWrapper extends JSWrapper implements JSGlobalObject {
        }
    }
 
-       
+   /**
+      * Given an object that was created by makeObjectWrapper, returned
+      * the wrapped bean.
+      * 
+      * @param object an object created by makeObjectWrapper
+      * 
+      * @return the wrapped object
+      * @exception JSException If the object was not a wrapped bean
+      */
+     public Object getWrappedObject(JSObject object) throws JSException {
+         synchronized (evaluator) {
+             if (object == null) throw new NullPointerException("getWrappedObject(null)");
+             if (object instanceof JSWrapper) {
+                 JSWrapper jswrapper = (JSWrapper) object;
+                 ESObject esobject = jswrapper.getESObject();
+                 if (esobject != null && esobject instanceof ESWrapper) {
+                     ESWrapper eswrapper = (ESWrapper) esobject;
+                     return eswrapper.getJavaObject();
+                 } else {
+                     throw new JSException("getWrappedObject call on an object not created by makeWrappedObject");
+                 }
+             } else {
+                 throw new JSException("getWrappedObject call on an object not created by makeWrappedObject");
+             }
+         }    
+     }
+    
    /**
      * Mark an object as a bean, restricting its access by FESI scripts
      * to the public bean methods and properties.
      *
      * @param object The object to wrap as a bean.
+     * @return An internal object that can be passed to FESI to represent the wrapped bean.
      */
     public Object makeBeanWrapper(Object object) {
        synchronized (evaluator) {
@@ -85,6 +114,31 @@ public class JSGlobalWrapper extends JSWrapper implements JSGlobalObject {
            }
        }
    }
+
+   /**
+     * Given an object that was created by makeBeanWrapper, returned
+     * the wrapped bean.
+     * 
+     * @param object an object created by makeBeanWrapper
+     * 
+     * @return the wrapped object
+   * @exception JSException If the object was not a wrapped bean
+     */
+    public Object getWrappedBean(Object object) throws JSException {
+        if (object == null) throw new NullPointerException("getWrappedBean(null)");
+        synchronized (evaluator) {
+            if (object instanceof ESWrapper) {
+                ESWrapper eswrapper = (ESWrapper) object;
+                if (eswrapper.isBean()) {
+                    return eswrapper.getJavaObject();
+                } else {
+                    throw new JSException("getWrappedBean call on an object not created by makeWrappedBean");
+                }
+            } else {
+                throw new JSException("getWrappedBean call on an object not created by makeWrappedBean");
+            }
+        }    
+    }
 
    
     /** 

@@ -25,15 +25,8 @@
 package FESI.Interpreter;
 
 import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
 import java.io.IOException;
-
-import java.lang.reflect.Method;
-import java.lang.ClassLoader;
-import java.lang.ClassFormatError;
-
-import java.util.Hashtable;
-
+import java.io.OutputStream;
 
 import FESI.ClassFile.EventAdaptorClassFile;
 

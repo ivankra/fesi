@@ -17,12 +17,58 @@
 
 package FESI.Interpreter;
 
-import FESI.Parser.*;
-import FESI.AST.*;
-import FESI.Data.*;
-import FESI.Exceptions.*;
-
 import java.util.Enumeration;
+
+import FESI.AST.ASTAllocationExpression;
+import FESI.AST.ASTAndExpressionSequence;
+import FESI.AST.ASTAssignmentExpression;
+import FESI.AST.ASTBinaryExpressionSequence;
+import FESI.AST.ASTBreakStatement;
+import FESI.AST.ASTCompositeReference;
+import FESI.AST.ASTConditionalExpression;
+import FESI.AST.ASTContinueStatement;
+import FESI.AST.ASTEmptyExpression;
+import FESI.AST.ASTExpressionList;
+import FESI.AST.ASTForInStatement;
+import FESI.AST.ASTForStatement;
+import FESI.AST.ASTForVarInStatement;
+import FESI.AST.ASTForVarStatement;
+import FESI.AST.ASTFormalParameterList;
+import FESI.AST.ASTFunctionCallParameters;
+import FESI.AST.ASTFunctionDeclaration;
+import FESI.AST.ASTIdentifier;
+import FESI.AST.ASTIfStatement;
+import FESI.AST.ASTLiteral;
+import FESI.AST.ASTOperator;
+import FESI.AST.ASTOrExpressionSequence;
+import FESI.AST.ASTPostfixExpression;
+import FESI.AST.ASTProgram;
+import FESI.AST.ASTPropertyIdentifierReference;
+import FESI.AST.ASTPropertyValueReference;
+import FESI.AST.ASTReturnStatement;
+import FESI.AST.ASTStatement;
+import FESI.AST.ASTStatementList;
+import FESI.AST.ASTThisReference;
+import FESI.AST.ASTUnaryExpression;
+import FESI.AST.ASTVariableDeclaration;
+import FESI.AST.ASTWhileStatement;
+import FESI.AST.ASTWithStatement;
+import FESI.AST.EcmaScriptVisitor;
+import FESI.AST.Node;
+import FESI.AST.SimpleNode;
+import FESI.Data.ESArguments;
+import FESI.Data.ESBoolean;
+import FESI.Data.ESLoader;
+import FESI.Data.ESNull;
+import FESI.Data.ESNumber;
+import FESI.Data.ESObject;
+import FESI.Data.ESReference;
+import FESI.Data.ESString;
+import FESI.Data.ESUndefined;
+import FESI.Data.ESValue;
+import FESI.Exceptions.EcmaScriptException;
+import FESI.Exceptions.ProgrammingError;
+import FESI.Parser.EcmaScriptConstants;
 
 /**
  * Exception used to package any exception encountered during visiting

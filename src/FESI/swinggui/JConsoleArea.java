@@ -17,14 +17,21 @@
 
 package FESI.swinggui;
 
-import FESI.gui.*;
-
-import FESI.Exceptions.*;
-
-import javax.swing.*;
-import javax.swing.text.*;
-import java.awt.event.*;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+
+import javax.swing.JTextArea;
+import javax.swing.KeyStroke;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultEditorKit;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import javax.swing.text.Keymap;
+import javax.swing.text.TextAction;
+
+import FESI.Exceptions.ProgrammingError;
 
 /**
  * Implements a console with interactive input/output (in collaboration with Console).

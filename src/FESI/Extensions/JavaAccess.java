@@ -17,14 +17,19 @@
 
 package FESI.Extensions;
 
-import FESI.Parser.*;
-import FESI.AST.*;
-import FESI.Data.*;
-import FESI.Interpreter.*;
-import FESI.Exceptions.*;
-
-import java.awt.event.*;
-import java.util.EventListener;
+import FESI.Data.BuiltinFunctionObject;
+import FESI.Data.ESBeans;
+import FESI.Data.ESBoolean;
+import FESI.Data.ESLoader;
+import FESI.Data.ESObject;
+import FESI.Data.ESPackages;
+import FESI.Data.ESString;
+import FESI.Data.ESUndefined;
+import FESI.Data.ESValue;
+import FESI.Data.FunctionPrototype;
+import FESI.Data.GlobalObject;
+import FESI.Exceptions.EcmaScriptException;
+import FESI.Interpreter.Evaluator;
 
 
 

@@ -17,39 +17,40 @@
 
 package FESI.Data;
 
-import FESI.Exceptions.*;
-import FESI.Interpreter.*;
+import FESI.Exceptions.EcmaScriptException;
+import FESI.Exceptions.ProgrammingError;
+import FESI.Interpreter.Evaluator;
 
 /**
  * Implemements the EcmaScript String singleton.
  */
 public class StringObject extends BuiltinFunctionObject {
-        
-            
+
+
     private StringObject(ESObject prototype, Evaluator evaluator) {
         super(prototype, evaluator, "String", 1);
     }
-    
+
     // overrides
     public String toString() {
         return "<String>";
     }
-      
+
     // overrides
     public ESValue callFunction(ESObject thisObject,
-                         ESValue[] arguments) 
+                         ESValue[] arguments)
                                         throws EcmaScriptException {
          if (arguments.length==0) {
              return new ESString("");
          } else {
              return new ESString(arguments[0].toString());
          }
-    } 
-    
-       
+    }
+
+
     // overrides
-    public ESObject doConstruct(ESObject thisObject, 
-                              ESValue[] arguments) 
+    public ESObject doConstruct(ESObject thisObject,
+                              ESValue[] arguments)
                                         throws EcmaScriptException {
          StringPrototype theObject = null;
          ESObject sp = evaluator.getStringPrototype();
@@ -60,8 +61,8 @@ public class StringObject extends BuiltinFunctionObject {
              theObject.value = new ESString("");
          }
          return theObject;
-    }    
-   
+    }
+
     /**
      * Utility function to create the single String object
      *
@@ -84,29 +85,29 @@ public class StringObject extends BuiltinFunctionObject {
                 StringPrototypeToString(String name, Evaluator evaluator, FunctionPrototype fp) {
                     super(fp, evaluator, name, 1);
                 }
-                public ESValue callFunction(ESObject thisObject, 
+                public ESValue callFunction(ESObject thisObject,
                                         ESValue[] arguments)
-                       throws EcmaScriptException { 
+                       throws EcmaScriptException {
                    return ((StringPrototype) thisObject).value;
                 }
             }
-            
+
             class StringPrototypeValueOf extends BuiltinFunctionObject {
                 StringPrototypeValueOf(String name, Evaluator evaluator, FunctionPrototype fp) {
                     super(fp, evaluator, name, 1);
                 }
-                public ESValue callFunction(ESObject thisObject, 
+                public ESValue callFunction(ESObject thisObject,
                                                 ESValue[] arguments)
-                       throws EcmaScriptException { 
+                       throws EcmaScriptException {
                    return ((StringPrototype) thisObject).value;
                 }
             }
-            
+
             class StringPrototypeCharAt extends BuiltinFunctionObject {
                 StringPrototypeCharAt(String name, Evaluator evaluator, FunctionPrototype fp) {
                     super(fp, evaluator, name, 1);
                 }
-                public ESValue callFunction(ESObject thisObject, 
+                public ESValue callFunction(ESObject thisObject,
                                                 ESValue[] arguments)
                        throws EcmaScriptException {
                     String str = thisObject.toString();
@@ -122,12 +123,12 @@ public class StringObject extends BuiltinFunctionObject {
                     }
                 }
             }
-            
+
             class StringPrototypeCharCodeAt extends BuiltinFunctionObject {
                 StringPrototypeCharCodeAt(String name, Evaluator evaluator, FunctionPrototype fp) {
                     super(fp, evaluator, name, 1);
                 }
-                public ESValue callFunction(ESObject thisObject, 
+                public ESValue callFunction(ESObject thisObject,
                                                 ESValue[] arguments)
                        throws EcmaScriptException {
                     String str = thisObject.toString();
@@ -143,12 +144,12 @@ public class StringObject extends BuiltinFunctionObject {
                     }
                 }
             }
-            
+
             class StringPrototypeIndexOf extends BuiltinFunctionObject {
                 StringPrototypeIndexOf(String name, Evaluator evaluator, FunctionPrototype fp) {
                     super(fp, evaluator, name, 1);
                 }
-                public ESValue callFunction(ESObject thisObject, 
+                public ESValue callFunction(ESObject thisObject,
                                                 ESValue[] arguments)
                        throws EcmaScriptException {
                     String str = thisObject.toString();
@@ -164,12 +165,12 @@ public class StringObject extends BuiltinFunctionObject {
                      return new ESNumber(res);
                 }
             }
-            
+
             class StringPrototypeLastIndexOf extends BuiltinFunctionObject {
                 StringPrototypeLastIndexOf(String name, Evaluator evaluator, FunctionPrototype fp) {
                     super(fp, evaluator, name, 1);
                 }
-                public ESValue callFunction(ESObject thisObject, 
+                public ESValue callFunction(ESObject thisObject,
                                                 ESValue[] arguments)
                        throws EcmaScriptException {
                     String str = thisObject.toString();
@@ -180,7 +181,7 @@ public class StringObject extends BuiltinFunctionObject {
                     String searched = arguments[0].toString();
                     if (arguments.length>1) {
                         double p = arguments[1].doubleValue();
-                        if (!Double.isNaN(p)) pos = arguments[1].toInt32(); 
+                        if (!Double.isNaN(p)) pos = arguments[1].toInt32();
                     }
                     int res = str.lastIndexOf(searched, pos);
                     return new ESNumber(res);
@@ -192,7 +193,7 @@ public class StringObject extends BuiltinFunctionObject {
                 StringPrototypeSplit(String name, Evaluator evaluator, FunctionPrototype fp) {
                     super(fp, evaluator, name, 1);
                 }
-                public ESValue callFunction(ESObject thisObject, 
+                public ESValue callFunction(ESObject thisObject,
                                                 ESValue[] arguments)
                        throws EcmaScriptException {
                     String str = thisObject.toString();
@@ -207,8 +208,8 @@ public class StringObject extends BuiltinFunctionObject {
                             int l = str.length();
                             theArray.setSize(l);
                             for (int i=0; i<l; i++) {
-                                theArray.setElementAt( 
-                                           new ESString(str.substring(i,i+1)), i);                                
+                                theArray.setElementAt(
+                                           new ESString(str.substring(i,i+1)), i);
                             }
                         } else {
                             int i = 0;
@@ -221,8 +222,8 @@ public class StringObject extends BuiltinFunctionObject {
                                 theArray.setElementAt(
                                         new ESString(str.substring(start, pos)),i);
                                 start = pos + sep.length();
-                                i++;  
-                            }                              
+                                i++;
+                            }
                         }
                     }
                     return theArray;
@@ -233,7 +234,7 @@ public class StringObject extends BuiltinFunctionObject {
                 StringPrototypeSubstring(String name, Evaluator evaluator, FunctionPrototype fp) {
                     super(fp, evaluator, name, 1);
                 }
-                public ESValue callFunction(ESObject thisObject, 
+                public ESValue callFunction(ESObject thisObject,
                                                 ESValue[] arguments)
                        throws EcmaScriptException {
                     String str = thisObject.toString();
@@ -256,15 +257,53 @@ public class StringObject extends BuiltinFunctionObject {
                 }
             }
 
+          // Added substr from Wendell T. Hicken, not sure if in standard
+           class StringPrototypeSubstr extends BuiltinFunctionObject {
+                 StringPrototypeSubstr(String name, Evaluator evaluator, FunctionPrototype fp) {
+                     super(fp, evaluator, name, 1);
+                 }
+                 public ESValue callFunction(ESObject thisObject,
+                                                 ESValue[] arguments)
+                        throws EcmaScriptException {
+                     String str = thisObject.toString();
+                     int start = 0;
+                     if (arguments.length > 0) {
+                         start = arguments[0].toInt32();
+                     }
+                     int len = Integer.MAX_VALUE;
+                     if (arguments.length > 1) {
+                         len = arguments[1].toInt32();
+                     }
+
+                     if (start < 0) {
+                         // Note: This is how ECMA262 defines substr.
+                         // IE (Version 5.5) doesn't support negative numbers here,
+                         // just truncating to zero, like "substring"
+                         start = str.length()+start;
+
+                         if (start < 0) start = 0;
+                     }
+
+                     if (len < 0) len = 0;
+                     if (str.length()-start < len)
+                         len = str.length()-start;
+
+                     if (len <= 0) {
+                         return new ESString("");
+                     }
+                     return new ESString(str.substring(start, start+len));
+                 }
+            }
+
             class StringPrototypeToLowerCase extends BuiltinFunctionObject {
                 StringPrototypeToLowerCase(String name, Evaluator evaluator, FunctionPrototype fp) {
                     super(fp, evaluator, name, 1);
                 }
-                public ESValue callFunction(ESObject thisObject, 
+                public ESValue callFunction(ESObject thisObject,
                                                 ESValue[] arguments)
                        throws EcmaScriptException {
                     String str = thisObject.toString();
-                    
+
                     return new ESString(str.toLowerCase());
                 }
             }
@@ -273,11 +312,11 @@ public class StringObject extends BuiltinFunctionObject {
                 StringPrototypeToUpperCase(String name, Evaluator evaluator, FunctionPrototype fp) {
                     super(fp, evaluator, name, 1);
                 }
-                public ESValue callFunction(ESObject thisObject, 
+                public ESValue callFunction(ESObject thisObject,
                                                 ESValue[] arguments)
                        throws EcmaScriptException {
                     String str = thisObject.toString();
-                    
+
                     return new ESString(str.toUpperCase());
                 }
             }
@@ -287,9 +326,9 @@ public class StringObject extends BuiltinFunctionObject {
                 StringObjectFromCharCode(String name, Evaluator evaluator, FunctionPrototype fp) {
                     super(fp, evaluator, name, 1);
                 }
-                public ESValue callFunction(ESObject thisObject, 
+                public ESValue callFunction(ESObject thisObject,
                                         ESValue[] arguments)
-                       throws EcmaScriptException { 
+                       throws EcmaScriptException {
                      ESObject sp = this.evaluator.getStringPrototype();
                      StringPrototype theObject= new StringPrototype(sp, this.evaluator);
                      StringBuffer sb = new StringBuffer();
@@ -304,11 +343,11 @@ public class StringObject extends BuiltinFunctionObject {
 
             stringObject.putHiddenProperty("prototype",stringPrototype);
             stringObject.putHiddenProperty("length",new ESNumber(1));
-            stringObject.putHiddenProperty("fromCharCode", 
+            stringObject.putHiddenProperty("fromCharCode",
                new StringObjectFromCharCode("fromCharCode", evaluator, functionPrototype));
 
             stringPrototype.putHiddenProperty("constructor",stringObject);
-            stringPrototype.putHiddenProperty("toString", 
+            stringPrototype.putHiddenProperty("toString",
                new StringPrototypeToString("toString", evaluator, functionPrototype));
             stringPrototype.putHiddenProperty("valueOf",
                new StringPrototypeValueOf("valueOf", evaluator, functionPrototype));
@@ -324,6 +363,8 @@ public class StringObject extends BuiltinFunctionObject {
                new StringPrototypeSplit("split", evaluator, functionPrototype));
             stringPrototype.putHiddenProperty("substring",
                new StringPrototypeSubstring("substring", evaluator, functionPrototype));
+            stringPrototype.putHiddenProperty("substr",
+                new StringPrototypeSubstr("substr", evaluator,functionPrototype));
             stringPrototype.putHiddenProperty("toLowerCase",
                new StringPrototypeToLowerCase("toLowerCase", evaluator, functionPrototype));
             stringPrototype.putHiddenProperty("toUpperCase",
@@ -332,7 +373,7 @@ public class StringObject extends BuiltinFunctionObject {
             e.printStackTrace();
             throw new ProgrammingError(e.getMessage());
         }
-        
+
         evaluator.setStringPrototype(stringPrototype);
 
         return stringObject;

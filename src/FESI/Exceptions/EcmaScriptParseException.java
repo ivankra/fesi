@@ -17,8 +17,10 @@
 
 package FESI.Exceptions;
 
-import FESI.Parser.*;
-import FESI.Interpreter.*;
+import FESI.Interpreter.EvaluationSource;
+import FESI.Parser.EcmaScriptConstants;
+import FESI.Parser.ParseException;
+import FESI.Parser.Token;
 
 /**
  * Exception used to signal parsing errors

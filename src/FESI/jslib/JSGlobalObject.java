@@ -32,23 +32,40 @@ public interface JSGlobalObject extends JSObject {
      * to the public bean methods and properties.
      *
      * @param object The object to wrap as a bean.
+     * 
+     * @return an opaque object that can be passed to FESI and behave as a Bean.
      */
    public Object makeBeanWrapper(Object object);
+   
+   /**
+    * Given an object that was created by makeBeanWrapper, returned
+    * the wrapped bean. Note that most JSxxx routine already return an
+    * unwrap value if possible.
+    * 
+    * @param object an object created by makeBeanWrapper
+    * 
+    * @return the wrapped object
+    * @exception JSException If the object was not a wrapped bean
+    */
+   public Object getWrappedBean(Object object) throws JSException;
+   
 
     /** 
-     * Make a new object based the object prototype object.
+     * Make a new EcmaScript object based the object prototype object.
      * The object is of class Object and has initially no property.
+     * 
+     * @return A new EcmaScript object
      *
-     * @return A new object
      */
    public JSObject makeJSObject();
+
     
     /** 
-     * Make a new object based on a given prototype (which may be null).
+     * Make a new EcmaScript object based on a given prototype (which may be null).
      * The object is of class Object and has initially no property.
      *
      * @param prototype An object to use as prototype for this object
-     * @return A new object
+     * @return A new EcmaScript object
      */
     public JSObject makeJSObject(JSObject prototype);
     
@@ -58,14 +75,27 @@ public interface JSGlobalObject extends JSObject {
      * 'this' object.
      *
      * @param object The object to wrap.
+     * @return The EcmaScript object that wrap the original object.
      */
     public JSObject makeObjectWrapper(Object object);
+
+    /**
+     * Given an object that was created by makeObjectWrapper, returned
+     * the wrapped bean. Note that most JSxxx routine already return an
+     * unwrap value if possible
+     * 
+     * @param object an object created by makeJSObject
+     * 
+     * @returnt the original object.
+     * @exception JSException If the object was not a wrapped object
+     */
+   public Object getWrappedObject(JSObject object) throws JSException;
 
     /** 
      * Make a new array object.
      * The object is of class Array and is empty (length 0).
      *
-     * @return A new object
+     * @return A new EcmaScript object thatis an Array
      */
     public JSObject makeJSArrayObject();
     

@@ -28,9 +28,6 @@ package FESI.ClassFile;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-import FESI.ClassFile.ClassFile;
-import FESI.ClassFile.ConstantPoolEntry;
-
  /**
   * <p> provides minimal support for FLOAT_CONSTANT CPE </p>
   */

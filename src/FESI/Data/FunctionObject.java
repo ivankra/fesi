@@ -17,14 +17,19 @@
 
 package FESI.Data;
 
-import FESI.Parser.*;
-import FESI.AST.*;
 import java.util.Vector;
-import FESI.Exceptions.*;
-import FESI.Interpreter.Evaluator;
-import FESI.Interpreter.StringEvaluationSource;
-import FESI.Interpreter.FunctionEvaluationSource;
+
+import FESI.AST.ASTFormalParameterList;
+import FESI.AST.ASTStatementList;
+import FESI.AST.EcmaScriptTreeConstants;
+import FESI.Exceptions.EcmaScriptException;
+import FESI.Exceptions.EcmaScriptParseException;
 import FESI.Interpreter.EcmaScriptVariableVisitor;
+import FESI.Interpreter.Evaluator;
+import FESI.Interpreter.FunctionEvaluationSource;
+import FESI.Interpreter.StringEvaluationSource;
+import FESI.Parser.EcmaScript;
+import FESI.Parser.ParseException;
 
 
 /**

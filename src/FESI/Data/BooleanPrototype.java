@@ -17,8 +17,8 @@
 
 package FESI.Data;
 
-import FESI.Exceptions.*;
-import FESI.Interpreter.*;
+import FESI.Exceptions.EcmaScriptException;
+import FESI.Interpreter.Evaluator;
 
 /**
  * Implements the prototype and is the class of all Boolean objects

@@ -17,7 +17,7 @@
 
 package FESI.swinggui;
 
-import FESI.gui.*;
+import FESI.gui.Console;
  
 /**
  * Extend the console interface to allow dialog between JConsoleArea and SwingConsole

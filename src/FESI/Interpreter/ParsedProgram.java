@@ -17,11 +17,9 @@
 
 package FESI.Interpreter;
 
-import FESI.Parser.*;
-import FESI.AST.*;
-import FESI.Data.*;
-
 import java.util.Vector;
+
+import FESI.AST.ASTProgram;
 
 /**
  * Represent a parsed program or function

@@ -1,7 +1,8 @@
 /**
- * Copyright (C) 1998 Jean-Marc Lugrin - all rights reserved.
+ * Copyright (C) 1998-2003 Jean-Marc Lugrin - all rights reserved.
  *
  * This file contains an EcmaScript grammar and actions that implement a front-end.
+ * Reference to EcmaScript standard 262 June 1977 
  */
 
 options {
@@ -10,7 +11,19 @@ options {
   DEBUG_TOKEN_MANAGER = false;
   JAVA_UNICODE_ESCAPE = false; // We do our own Unicode processing
   UNICODE_INPUT = false; // Wait until JavaCC uses Java 1.1 !
-  BUILD_NODE_FILES=false; // Do not build SimpleNode.java (it is in FESI.AST)
+  // Set BUILD_NODE_FILES to true to rebuild all AST routines, in case
+  // a new production is added to the grammar.
+  // BEWARE: 
+  // ONLY the NEW AST routines must be copied from the 
+  // FESI.Parser package to the FESI.AST package manually, and the 
+  // import FESI.Parser.* statement must be added to it.
+  // SOME AST ROUTINES WHERE MODIFIED MANUALLY - do not overwrite them!
+  // The FESI.AST.EcmaScriptVisitor interface must manually be adapted, as
+  // well as the FESI.AST.EcmaScriptDumpVisitor.
+  // Then all sources AST routines and the SimpleNode routine must be 
+  // deleted from the parser package where they were generated.
+  // 
+  BUILD_NODE_FILES=false; 
   MULTI=true;
   NODE_DEFAULT_VOID=true;
   NODE_PACKAGE = "FESI.AST";
@@ -87,7 +100,7 @@ public class EcmaScript {
 PARSER_END(EcmaScript)
 
 
-/* WHITE SPACE */
+/* WHITE SPACE - 7.1*/
 
 SKIP :
 {
@@ -97,12 +110,18 @@ SKIP :
 | "\f"
 }
 
+/* Line terminator (EmcaScript 7.2)
+ * Handled especialyl due to the EOL as semicolon rules
+ * Splical token do not impact parse, but are available for examination 
+ */
 SPECIAL_TOKEN :
 {
   <EOL: (["\n","\r"])+ >
 }
 
-/* COMMENTS */
+/* COMMENTS - EcmaScript 7.3
+ * Use states to skip until EOL
+ */
 
 MORE :
 {
@@ -114,7 +133,7 @@ MORE :
 <IN_SINGLE_LINE_COMMENT>
 SPECIAL_TOKEN :
 {
-  <SINGLE_LINE_COMMENT: "\n" | "\r" | "\r\n" > { input_stream.backup(1); } : DEFAULT
+  <SINGLE_LINE_COMMENT: "\n" | "\r" | "\r\n" > : DEFAULT
 }
 
 <IN_MULTI_LINE_COMMENT>
@@ -129,7 +148,7 @@ MORE :
   < ~[] >
 }
 
-/* RESERVED WORDS AND LITERALS */
+/* RESERVED WORDS AND LITERALS EcmaScript 7.4 */
 
 TOKEN :
 {
@@ -173,9 +192,13 @@ TOKEN :
 | < FALSE: "false" >
 | < NULL: "null" >
 
+
 }
 
-/* LITERALS */
+/* LITERALS EcmaScript 7.7 
+ * Decimal and floating point literals are recognized separately (to ease storing?)
+ * FLoating points literals are too permissive (ONLY ONE LEADING ZERO ALLOWED)
+ */
 
 TOKEN :
 {
@@ -205,7 +228,7 @@ TOKEN :
         )*
         "'"
   >
-|  // Maybe x and u could be x,X and u,U
+|  
   < #ESCAPE_SEQUENCE:
       "\\"
         ( ["n","t","b","r","f","\\","'","\""]

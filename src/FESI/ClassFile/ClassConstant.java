@@ -28,10 +28,6 @@ package FESI.ClassFile;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-import FESI.ClassFile.ClassFile;
-import FESI.ClassFile.ConstantPoolEntry;
-import FESI.ClassFile.UTF8Constant;
-
 class ClassConstant extends ConstantPoolEntry {
 
     private UTF8Constant name;

@@ -17,11 +17,14 @@
 
 package FESI.Extensions;
 
-import FESI.Parser.*;
-import FESI.AST.*;
-import FESI.Interpreter.*;
-import FESI.Exceptions.*;
-import FESI.Data.*;
+import FESI.Data.BuiltinFunctionObject;
+import FESI.Data.ESNumber;
+import FESI.Data.ESObject;
+import FESI.Data.ESValue;
+import FESI.Data.FunctionPrototype;
+import FESI.Data.GlobalObject;
+import FESI.Exceptions.EcmaScriptException;
+import FESI.Interpreter.Evaluator;
 
 
 /**
@@ -34,6 +37,8 @@ import FESI.Data.*;
 public class OptionalRegExp extends Extension {
    
     private Evaluator evaluator = null;
+    
+    private static Extension loadedRegExpExtension = null;
     
     /**
      * A dummy object used if no regular expression tool can be found
@@ -70,13 +75,22 @@ public class OptionalRegExp extends Extension {
         	
         this.evaluator = evaluator;
 
-	 // First attempt using ORO (as it is of higher quality)
-        regExp = evaluator.addExtension("FESI.Extensions.ORORegExp");
+        // May be the extension has already be loaded explicitely?
+        if (loadedRegExpExtension != null) return;
         
-        if (regExp == null) {
-		// Then attempt using GNU (as it is LGPL)
-        	regExp = evaluator.addExtension("FESI.Extensions.GNURegExp");
-        }
+        // First try jdk 1.4 regexp
+          regExp = evaluator.addExtension("FESI.Extensions.JavaRegExp");
+        
+          if (regExp == null) {
+          // Then attempt using ORO 
+            regExp = evaluator.addExtension("FESI.Extensions.ORORegExp");
+         }
+          
+        
+          if (regExp == null) {
+          // Then attempt using GNU (as it is LGPL)
+              regExp = evaluator.addExtension("FESI.Extensions.GNURegExp");
+          }
         
         // If neither is present, make a dummy object which will generate an error
         // if the user attempt to use regluar expression
@@ -90,6 +104,22 @@ public class OptionalRegExp extends Extension {
             globalObjectRegExp.putHiddenProperty("length",new ESNumber(1));
             go.putHiddenProperty("RegExp", globalObjectRegExp);
         }
+    }
+    
+    // This is a little bit hacky
+    public static void setLoadedRegExp(Extension regExp) {
+        if (loadedRegExpExtension != null) {
+            throw new IllegalStateException("Attempt to load extension " + regExp + 
+            " when conflicting extension " + loadedRegExpExtension +  " is already loaded");
+        }
+        
+        if (regExp == null) { throw new NullPointerException("regExp"); }
+
+        loadedRegExpExtension = regExp;    
+    }
+    
+    public static boolean hasLoadedRegExp() {
+        return loadedRegExpExtension != null;
     }
 
 }

@@ -17,19 +17,34 @@
 
 package FESI.Interpreter;
 
-import FESI.Parser.*;
-import FESI.AST.*;
-import FESI.Extensions.Extension;
-import FESI.Extensions.BasicIOInterface;
-import FESI.gui.*;
-import FESI.Data.*;
-import FESI.Exceptions.*;
-
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.util.Enumeration;
-import java.util.Vector;
 import java.util.StringTokenizer;
-import java.util.Properties;
+import java.util.Vector;
+
+import FESI.Data.ArrayPrototype;
+import FESI.Data.ESLoader;
+import FESI.Data.ESObject;
+import FESI.Data.ESString;
+import FESI.Data.ESUndefined;
+import FESI.Data.ESValue;
+import FESI.Data.ESWrapper;
+import FESI.Data.ValueDescription;
+import FESI.Exceptions.EcmaScriptException;
+import FESI.Extensions.BasicIOInterface;
+import FESI.gui.Console;
+import FESI.gui.GuiFactory;
+import FESI.gui.InterpreterCommands;
+import FESI.gui.MessageBox;
 
 /**
  * A general purpose interpreter for basic command line and GUI interfaces.
@@ -40,7 +55,7 @@ import java.util.Properties;
  * using this one as an example.
  */
 public class Interpret implements InterpreterCommands {
-  
+
 	// Most of the data is protected to allow subclassing the
 	// interpreter. They should NOT be used from other classses
 	// of this package (at least in FESI), as FESI can be
@@ -48,11 +63,11 @@ public class Interpret implements InterpreterCommands {
   protected static final InputStream originalIn = System.in;
   protected static final PrintStream originalOut = System.out;
   protected static final PrintStream originalErr = System.err;
-   
+
   protected InputStream inputStream = System.in;
   protected PrintStream printStream = System.out;
   protected PrintStream errorStream = System.err;
-   
+
   private boolean versionPrinted = false;
   protected boolean interactive = false;
   protected boolean windowOnly = false;  // Use MessageBox for alert, and GUI if interactive
@@ -62,7 +77,7 @@ public class Interpret implements InterpreterCommands {
   private static String eol = System.getProperty("line.separator", "\n");
   protected ESObject document = null;
   protected Evaluator evaluator = new Evaluator();
- 
+
   protected DataInputStream lineReader = null;
 	protected GuiFactory guiFactory = null;
   protected Console console = null;
@@ -74,6 +89,8 @@ public class Interpret implements InterpreterCommands {
   protected  ESValue theValue = ESUndefined.theUndefined;
   protected String[] esArgs = new String[0]; // Arguments after -A
 
+  protected String regularExpressionExtensionName = "FESI.Extensions.OptionalRegExp";
+  
   /**
    * Create and initialize the interpreter
    */
@@ -89,22 +106,22 @@ public class Interpret implements InterpreterCommands {
 	protected void errorExit() {
 		System.exit(1);
 	}
-	
+
   /**
    * Exit with a status of 0 if no error was detected and 1 otherwise
    */
   public void exit() {
       System.exit(anyError ? 1 : 0);
   }
-  
+
   /**
    * Forget any last result of a previous evaluation.
    */
   void clearLastResult() {
       lastResult = null;
   }
-  
-	
+
+
 	/**
 	 * Do any standard extension initialization. Can be overriden for
 	 * specific implementation.
@@ -117,7 +134,7 @@ public class Interpret implements InterpreterCommands {
         e.printStackTrace();
         errorExit();
     }
-    
+
     try {
         evaluator.addMandatoryExtension("FESI.Extensions.Database");
     } catch (EcmaScriptException e) {
@@ -126,27 +143,29 @@ public class Interpret implements InterpreterCommands {
         errorExit();
     }
 
-    // Note that we use OptinalRegExp, so it is not a problem of the ORO
+    // Note that we use OptionalRegExp, so it is not a problem of the ORO
 	  // stuff is notpresent.
-    try {
-        evaluator.addMandatoryExtension("FESI.Extensions.OptionalRegExp");
-    } catch (EcmaScriptException e) {
-        errorStream.println("Cannot initialize OptionalRegExp - exiting: " + eol + e);
-        e.printStackTrace();
-        errorExit();
-    }
-    
+      if (!FESI.Extensions.OptionalRegExp.hasLoadedRegExp()) {
+        try {
+            evaluator.addMandatoryExtension(regularExpressionExtensionName);
+        } catch (EcmaScriptException e) {
+            errorStream.println("Cannot initialize " + regularExpressionExtensionName + " - exiting: " + eol + e);
+            e.printStackTrace();
+             errorExit();
+        }
+        }
+
 	}
-	
-  /** 
+
+  /**
    * Reset the system (including at initialization)
    */
   protected void reset() throws EcmaScriptException {
-    
+
     if (windowOnly) {
-        if (console != null) { 
+        if (console != null) {
             // A reset from an existing console
-            if (isAWT) {  
+            if (isAWT) {
                 // reset stream while out of console.
                 System.setIn(originalIn);
                 System.setOut(originalOut);
@@ -164,12 +183,12 @@ public class Interpret implements InterpreterCommands {
             }
         }
     }
-      
+
     // Reset the main evaluator, forgetting all globals
     evaluator.reset();
-    
-    if (windowOnly && isAWT) {  
-        BasicIOInterface basicIOw = null;       
+
+    if (windowOnly && isAWT) {
+        BasicIOInterface basicIOw = null;
         try {
             basicIOw = (BasicIOInterface) evaluator.addMandatoryExtension("FESI.Extensions.BasicIOw");
         } catch (EcmaScriptException e) {
@@ -179,7 +198,7 @@ public class Interpret implements InterpreterCommands {
         }
         document = basicIOw.getDocument();
     } else if (windowOnly && !isAWT) {
-        BasicIOInterface basicIOs = null;        
+        BasicIOInterface basicIOs = null;
         try {
             basicIOs = (BasicIOInterface) evaluator.addMandatoryExtension("FESI.Extensions.BasicIOs");
         } catch (EcmaScriptException e) {
@@ -199,7 +218,7 @@ public class Interpret implements InterpreterCommands {
         }
         document = basicIO.getDocument();
     }
-    
+
    loadCommonExtensions();
 
     if (windowOnly && interactive) {
@@ -225,7 +244,7 @@ public class Interpret implements InterpreterCommands {
         	 }
         }
     	   console = guiFactory.makeConsole(this, getTitle() ,25,80);
-    	
+
         inputStream = console.getConsoleIn();
         printStream = console.getConsoleOut();
         errorStream = console.getConsoleOut();
@@ -260,7 +279,7 @@ public class Interpret implements InterpreterCommands {
       printStream.println(Evaluator.getWelcomeText());
       versionPrinted = true;
   }
-    
+
   /**
    * Display standard about text (for GUI)
    */
@@ -274,7 +293,7 @@ public class Interpret implements InterpreterCommands {
 	protected String getTitle() {
 		return "FESI - EcmaScript interpreter";
 	}
-	
+
   /**
    * Print standard ABOUT text
    */
@@ -294,13 +313,13 @@ public class Interpret implements InterpreterCommands {
       if (windowOnly && guiFactory != null) {
           MessageBox mb = guiFactory.displayMessageBox("FESI Error", str);
           mb.waitOK();
-                    
+
       } else {
-          
+
          errorStream.println(str);
       }
   }
-  
+
   /**
    * Print a short usage guide
    */
@@ -311,6 +330,7 @@ public class Interpret implements InterpreterCommands {
       errorStream.println("      -i  Start interactive read-eval-print loop");
       errorStream.println("      -v  display version even if not interactive");
       errorStream.println("      -e ext   Load the extension class ext");
+      errorStream.println("      -R ext   Load the specified regular expression extension");
       errorStream.println("      -T file   Process an estest file, exit 1 if any failure");
       errorStream.println("      -h file   Expand the script in an html file");
       errorStream.println("      -D  turnon all debug flags");
@@ -323,7 +343,7 @@ public class Interpret implements InterpreterCommands {
       errorStream.println("  By default silently interprets stdin");
       errorStream.println();
   }
-  
+
   /**
    * Process arguments and interpret what is required
    * MADE PUBLIC TO EASE USAGE ON THIS CLASS BY USER APPLICATIONS
@@ -332,7 +352,7 @@ public class Interpret implements InterpreterCommands {
    */
   public void doWork(String args[]) {
     boolean someFileLoaded = false;
- 
+
     // first pass to handle -i, -w, -s options
   	  // Selecting the interactive mode and GUI
    OUTONE:
@@ -340,7 +360,7 @@ public class Interpret implements InterpreterCommands {
       String arg = args[i];
       if (arg.startsWith("-")) {
          for (int j=1; j<arg.length();j++) {
-            char c = arg.charAt(j);   
+            char c = arg.charAt(j);
             if (c=='i') {
               interactive = true;
               continue;
@@ -351,13 +371,28 @@ public class Interpret implements InterpreterCommands {
               windowOnly = true;
               isAWT = false;
               continue;
+            } else if (c=='R') {
+                if (j<arg.length()-1) {
+                   if (! windowOnly) usage();
+                   finalMessage("-R must be last option in '-' string");
+                   if (interactive) errorExit();
+                   return;
+               }
+               if (i+1>=args.length) {
+                   if (! windowOnly) usage();
+                   finalMessage("-R requires a file parameter");
+                   if (interactive) errorExit();
+                   return;
+               }
+               regularExpressionExtensionName = args[++i];
+               continue OUTONE;
             } else if (c=='A') {
               break OUTONE;  // After -A reserved for called program
             }
         } // for
       } // if
     }  // for
- 
+
     try {
         reset();
     } catch (EcmaScriptException e) {
@@ -365,7 +400,7 @@ public class Interpret implements InterpreterCommands {
         e.printStackTrace();
         return;
     }
-       
+
     // second pass to handle -o, -v and -D options and check other options validity
     // This pass validates the positional rules of the options
     OUTTWO: // for each argument
@@ -375,7 +410,7 @@ public class Interpret implements InterpreterCommands {
           if (arg.equals("--")) continue OUTTWO;
         INTWO:  // for each letter in - argument
           for (int j=1; j<arg.length();j++) {
-              char c = arg.charAt(j);   
+              char c = arg.charAt(j);
               if (c=='o') {
                   if (j<arg.length()-1) {
                       if (! windowOnly) usage();
@@ -392,7 +427,7 @@ public class Interpret implements InterpreterCommands {
                          System.setOut(printStream);
                          continue OUTTWO;
                       } catch (IOException e){
-                         finalMessage("[[IO Error creating output file' " + fileName + 
+                         finalMessage("[[IO Error creating output file' " + fileName +
                              "']]" +
                              eol + "[[IO Error: " + e.getMessage() + "]]");
                          if (interactive) errorExit();
@@ -404,28 +439,28 @@ public class Interpret implements InterpreterCommands {
                       if (interactive) errorExit();
                       return;
                   }
-                
+
               } else if (c=='i') {   // already handle
                   continue INTWO;
-                  
+
               } else if (c=='D') {
                   ESLoader.setDebugJavaAccess(true);
                   ESLoader.setDebugLoader(true);
                   ESWrapper.setDebugEvent(true);
                   evaluator.setDebugParse(true);
                   continue INTWO;
-                  
+
               } else if (c=='v') {
                   if (!versionPrinted) printVersion();
                   continue INTWO;
-                  
+
               } else if (c=='w') {  // already handled
                   continue INTWO;
-                  
+
               } else if (c=='s') {  // already handled
                   continue INTWO;
-                  
-              } else if (c=='e') { 
+
+              } else if (c=='e') {
                   if (j<arg.length()-1) {
                       if (! windowOnly) usage();
                       finalMessage("-e must be last option in '-' string");
@@ -439,9 +474,9 @@ public class Interpret implements InterpreterCommands {
                       return;
                   }
                   i++;  // Skip file name
-                  continue OUTTWO; 
-                  
-              } else if (c=='T') { 
+                  continue OUTTWO;
+
+              } else if (c=='T') {
                   if (j<arg.length()-1) {
                       if (! windowOnly) usage();
                       finalMessage("-T must be last option in '-' string");
@@ -455,9 +490,13 @@ public class Interpret implements InterpreterCommands {
                       return;
                   }
                   i++;  // Skip file name
-                  continue OUTTWO; 
+                  continue OUTTWO;
                   
-              } else if (c=='f') { 
+               } else if (c=='R') {  // already handled
+                   i++;  // skip file name
+                   continue OUTTWO;
+
+              } else if (c=='f') {
                   if (j<arg.length()-1) {
                       if (! windowOnly) usage();
                       finalMessage("-f must be last option in '-' string");
@@ -471,9 +510,9 @@ public class Interpret implements InterpreterCommands {
                       return;
                   }
                   i++;  // Skip file name
-                  continue OUTTWO; 
-                  
-              } else if (c=='m') { 
+                  continue OUTTWO;
+
+              } else if (c=='m') {
                   if (j<arg.length()-1) {
                       if (! windowOnly) usage();
                       finalMessage("-m must be last option in '-' string");
@@ -487,9 +526,9 @@ public class Interpret implements InterpreterCommands {
                       return;
                   }
                   i++;  // Skip file name
-                  continue OUTTWO; 
+                  continue OUTTWO;
 
-              } else if (c=='h') { 
+              } else if (c=='h') {
                   if (j<arg.length()-1) {
                       if (! windowOnly) usage();
                       finalMessage("-h must be last option in '-' string");
@@ -503,9 +542,9 @@ public class Interpret implements InterpreterCommands {
                       return;
                   }
                   i++;  // Skip file name
-                  continue OUTTWO; 
-                  
-              } else if (c=='A') { 
+                  continue OUTTWO;
+
+              } else if (c=='A') {
                   if (j<arg.length()-1) {
                       if (! windowOnly) usage();
                       finalMessage("-A must be last option in '-' string");
@@ -520,7 +559,7 @@ public class Interpret implements InterpreterCommands {
                   }
                   break OUTTWO;
 
-              } else {  
+              } else {
                   if (! windowOnly) usage();
                   finalMessage("Unrecognize option '"+ c + "' on command line");
                   if (interactive) errorExit();
@@ -536,7 +575,7 @@ public class Interpret implements InterpreterCommands {
        ESObject ap = evaluator.getArrayPrototype();
        ArrayPrototype argsArray = new ArrayPrototype(ap, evaluator);
        for (int i=0; i<esArgs.length; i++) {
-          argsArray.putProperty(i, new ESString(esArgs[i]));   
+          argsArray.putProperty(i, new ESString(esArgs[i]));
        }
        ESObject go = evaluator.getGlobalObject();
        String ARGSstring = ("args").intern();
@@ -551,34 +590,38 @@ public class Interpret implements InterpreterCommands {
       if (arg.startsWith("-") && !args.equals("--")) {
         INTHREE:  // for each letter in - argument
           for (int j=1; j<arg.length();j++) {
-              char c = arg.charAt(j);   
+              char c = arg.charAt(j);
               if (c=='i') {  // already handled
                   continue INTHREE;
-                  
+
               } else if (c=='v') {  // already handled
                   continue INTHREE;
-                  
+
               } else if (c=='w') {  // already handled
                   continue INTHREE;
-                  
+
               } else if (c=='s') {  // already handled
                   continue INTHREE;
-                  
+
               } else if (c=='D') {  // already handled
                   continue INTHREE;
-                        
+
               } else if (c=='o') {  // already handled
                   i++;  // skip file name
-                  continue INTHREE;
-                        
-              } else if (c=='T') {  
+                  continue OUTTHREE;
+                  
+              } else if (c=='R') {  // already handled
+                  i++;  // skip file name
+                  continue OUTTHREE;
+
+              } else if (c=='T') {
                   String fileName = args[++i];
                   someFileLoaded = true; // So it exit without reading stdin not not -i
                   doTest(fileName);
                   anyMainTest = true;
                   continue OUTTHREE;
-              	
-              } else if (c=='e') {  
+
+              } else if (c=='e') {
                   String extensionName = args[++i];
                   try {
                       evaluator.addMandatoryExtension(extensionName);
@@ -587,36 +630,36 @@ public class Interpret implements InterpreterCommands {
                       errorExit();
                   }
                   continue OUTTHREE;
-                        
-              } else if (c=='f') {  
+
+              } else if (c=='f') {
                   String fileName = args[++i];
                   someFileLoaded = true; // So it exit without reading stdin not not -i
                   doLoadFile(fileName);
                   continue OUTTHREE;
-                        
-              } else if (c=='m') {  
+
+              } else if (c=='m') {
                   String moduleName = args[++i];
                   someFileLoaded = true; // So it exit without reading stdin not not -i
                   doLoad(moduleName);
                   continue OUTTHREE;
-                        
-              } else if (c=='h') {  
+
+              } else if (c=='h') {
                   String fileName = args[++i];
                   someFileLoaded = true; // So it exit without reading stdin not not -i
                   doExpand(fileName);
                   continue OUTTHREE;
-                  
+
               } else if (c=='A') {
                   break OUTTHREE;
               }
-            
+
             } // for
             continue OUTTHREE;
        } // starts with -
-      
+
       // Falls here only if args is a file name or is --
       String fileName = args[i];
-      
+
       // Check if -- (execute code from stdin)
       if (fileName.equals("--")) {
           if (interactive) {
@@ -632,33 +675,33 @@ public class Interpret implements InterpreterCommands {
                              "[[Error loading file '" + fileName + "']]");
                  if (interactive) errorExit();
                  return;
-              } 
-           } 
-          
+              }
+           }
+
       // Else a file name to edit
       } else {
-          
+
           if (interactive && console.supportsEditing()) {
               console.createEditor(fileName);
           } else {
               doLoad(fileName); // If not interactive just load the file
           }
-          
-      } 
-             
+
+      }
+
     } // for OUTTHREE
-    
+
     if (interactive) {
-        
+
         printStream.println("Interactive read eval print loop - type @help for a list of commands");
-        
+
         try {
             printStream.print("> "); printStream.flush();
             // USE DEPRECATED ROUTINE AS DEFAULT IO STREAMS USE DEPRECATED STREAMS
             String line = lineReader.readLine();
 
             while(line!= null) {
-                
+
                 if (line.startsWith("@")) {
                     StringTokenizer st = new StringTokenizer(line);
                     String command = null;
@@ -666,13 +709,13 @@ public class Interpret implements InterpreterCommands {
                     command=st.nextToken().toLowerCase().trim();
                     if (st.hasMoreTokens()) {
                         parameter = st.nextToken().trim();
-                    }  
+                    }
                     // printStream.println("command '" + command +"'");
-                    
-                    if (Command.executeCommand(this, printStream, command, parameter)) break;         
-                   
+
+                    if (Command.executeCommand(this, printStream, command, parameter)) break;
+
                 } else if (!line.equals("")){  // Real evaluation
-                
+
                     while (true) {
                         lastResult = null;
                         try {
@@ -697,7 +740,7 @@ public class Interpret implements InterpreterCommands {
                                    }
                                    line = line + eol + moreLine;
                                    // printStream.println();
-                                   continue; 
+                                   continue;
                                }
                             }
                           printStream.println("[[Error: " + e.getMessage() + "]]");
@@ -705,23 +748,23 @@ public class Interpret implements InterpreterCommands {
                         } catch (Exception e) {
                           printStream.println("[[**Uncatched error: " + e + "]]");
                           e.printStackTrace();
-                        } 
+                        }
                         break;
-                    } 
+                    }
                 }
                 printStream.print("> "); printStream.flush();
                 // USE DEPRECATED ROUTINE AS DEFAULT IO STREAMS USE DEPRECATED STREAMS
                 line = lineReader.readLine();
-             }  
+             }
           } catch (IOException e) {
              errorStream.println("[[IO error reading line: " + e + "]]");
              errorExit();
           }
-          
+
       } else {   // if !interactive
           if (!someFileLoaded) {  // No file on command line, load standard input in batch
               try {
-                evaluator.evaluate(new BufferedReader(new InputStreamReader(System.in)), 
+                evaluator.evaluate(new BufferedReader(new InputStreamReader(System.in)),
                             null, new FileEvaluationSource("<System.in>", null),false);
                 someFileLoaded = true;
               } catch (EcmaScriptException e) {
@@ -730,7 +773,7 @@ public class Interpret implements InterpreterCommands {
                  if (interactive) errorExit();
                  return;
              }
-          } 
+          }
       }
       // Normal exit - force exit in case other thread where started (awt)
       if (interactive || anyMainTest) exit();
@@ -758,7 +801,7 @@ public class Interpret implements InterpreterCommands {
        }
        printStream.println("[[Load path (" + pathSource + "): " + path + "]]");
   }
-   
+
   /**
    * Do the command load, loading from a module (via a path)
    * @param moduleName module to load
@@ -770,19 +813,20 @@ public class Interpret implements InterpreterCommands {
       }
       try {
           try {
-            document.putHiddenProperty("URL", 
+            document.putHiddenProperty("URL",
                            new ESString("module://" + moduleName));
           } catch (EcmaScriptException ignore) {
           }
         printStream.println("@@ Loading module '" + moduleName + "' . . .");
         startTime = System.currentTimeMillis();
-        
+
         theValue = evaluator.evaluateLoadModule(moduleName);        // EVALUATION
-        
+
         timeOfEval = System.currentTimeMillis() - startTime;
         lastResult = theValue;
         if (theValue != null) printStream.println("@@ Resulting in: " + theValue);
       } catch (EcmaScriptException e) {
+         // e.printStackTrace();
          printStream.println("[[Error loading the module '" + moduleName + "']]");
          printStream.println("[[Error: " + e.getMessage() + "]]");
       } catch (Exception e) {
@@ -790,7 +834,7 @@ public class Interpret implements InterpreterCommands {
           e.printStackTrace();
       } finally {
           try {
-                 document.putHiddenProperty("URL", 
+                 document.putHiddenProperty("URL",
                         new ESString("module://<stdin>"));
           } catch (EcmaScriptException ignore) {
           }
@@ -809,35 +853,35 @@ public class Interpret implements InterpreterCommands {
        if (file.exists()) {
           try {
               try {
-                document.putHiddenProperty("URL", 
+                document.putHiddenProperty("URL",
                                new ESString("file://" + file.getCanonicalPath()));
               } catch (EcmaScriptException ignore) {
               } catch (IOException ignore) {
               }
               printStream.println("@@ Loading file '" + file.getPath() + "' . . .");
-        
+
               theValue = evaluator.evaluateLoadFile(file);        // EVALUATION
               if (interactive && theValue != null) {
                    printStream.println("@@ Resulting in: " + theValue);
               }
-                  
+
             } catch (EcmaScriptException e) {
-                errorStream.println(e.getMessage() + 
+                errorStream.println(e.getMessage() +
                 eol + "[[Error loading file' " + file.getPath() + "']]");
                 return;
             } finally {
                try {
-                   document.putHiddenProperty("URL", 
+                   document.putHiddenProperty("URL",
                                 new ESString("file://<stdin>"));
                } catch (EcmaScriptException ignore) {
                }
           }
-      } else {        
+      } else {
           errorStream.println("[[File " + file.getPath() + " not found]]");
       }
-     
+
   }
-  
+
 
   /**
    * Execute a string - return the line number of any error or 0
@@ -849,24 +893,24 @@ public class Interpret implements InterpreterCommands {
   public int executeString(String text, String source) {
       try {
           try {
-            document.putHiddenProperty("URL", 
+            document.putHiddenProperty("URL",
                            new ESString("source://" + source));
           } catch (EcmaScriptException ignore) {
           }
           printStream.println("@@ Executing '" + source + "' . . .");
-    
+
           theValue = evaluator.evaluate(text, source);        // EVALUATION
           if (interactive && theValue != null) {
                printStream.println("@@ Resulting in: " + theValue);
           }
-              
+
         } catch (EcmaScriptException e) {
-            errorStream.println(e.getMessage() + 
+            errorStream.println(e.getMessage() +
             eol + "[[Error executing '" + source + "']]");
             return e.getLineNumber();
         } finally {
            try {
-               document.putHiddenProperty("URL", 
+               document.putHiddenProperty("URL",
                             new ESString("file://<stdin>"));
            } catch (EcmaScriptException ignore) {
            }
@@ -893,38 +937,38 @@ public class Interpret implements InterpreterCommands {
       if (file.exists()) {
           try {
               try {
-                document.putHiddenProperty("URL", 
+                document.putHiddenProperty("URL",
                                new ESString("file://" + file.getCanonicalPath()));
               } catch (EcmaScriptException ignore) {
               } catch (IOException ignore) {
               }
               if (interactive)
                   printStream.println("@@ Loading file '" + file.getPath() + "' . . .");
-            
+
                   theValue = evaluator.evaluateLoadFile(file);        // EVALUATION
                   if (interactive && theValue != null) {
                        printStream.println("@@ Resulting in: " + theValue);
                   }
-                  
+
             } catch (EcmaScriptException e) {
-                finalMessage(e.getMessage() + 
+                finalMessage(e.getMessage() +
                 eol + "[[Error loading file' " + file.getPath() + "']]");
                 if (!interactive) errorExit();
                 return;
             } finally {
                try {
-                         document.putHiddenProperty("URL", 
+                         document.putHiddenProperty("URL",
                                 new ESString("file://<stdin>"));
                } catch (EcmaScriptException ignore) {
                }
           }
       } else {
-         
+
           finalMessage("File " + file.getPath() + " not found");
           if (interactive) errorExit();
       }
   }
-  
+
   /**
    * Expand an html source file containing <script> commands
    * @param file to expand
@@ -944,10 +988,10 @@ public class Interpret implements InterpreterCommands {
       }
       BufferedReader lr = null;
      try {
-         document.putHiddenProperty("URL", 
+         document.putHiddenProperty("URL",
                             new ESString("file://" + file.getAbsolutePath()));
         lr = new BufferedReader(new FileReader(file));
-        if (interactive) printStream.println("@@ Expanding html file '" + 
+        if (interactive) printStream.println("@@ Expanding html file '" +
                                                 file.getPath() + "' . . .");
         boolean inScript = false;
         StringBuffer script = null;
@@ -970,7 +1014,7 @@ public class Interpret implements InterpreterCommands {
             src = lr.readLine();
             srclc = (src == null ) ? null : src.toLowerCase();
         }
-      
+
         if (inScript) {
             errorStream.println("[[Error - end of file reached with openened <script>]]");
         }
@@ -983,8 +1027,8 @@ public class Interpret implements InterpreterCommands {
           errorStream.println("[[**Uncatched error: " + e + "]]");
           e.printStackTrace(errorStream);
       } finally {
-          try { 
-            document.putHiddenProperty("URL", 
+          try {
+            document.putHiddenProperty("URL",
                             new ESString("file://<stdin>"));
           } catch (EcmaScriptException e) {}
               if (lr!= null) {try {lr.close();} catch (IOException e) {}}
@@ -1001,7 +1045,7 @@ public class Interpret implements InterpreterCommands {
         if (! interactive) errorExit();
         return;
       }
-      
+
     File file = new File(fileName);
     if (!file.exists()) {
       file = new File(fileName + ".estest");
@@ -1012,7 +1056,7 @@ public class Interpret implements InterpreterCommands {
     int nErrors = 0;
     try {
 		lr = new BufferedReader(new FileReader(file));
-		document.putHiddenProperty("URL", 
+		document.putHiddenProperty("URL",
 					   new ESString("file://" + file.getAbsolutePath()));
 		printStream.println("@@ Processing test file '" + file.getPath() + "' . . .");
 		String currentTest = null;
@@ -1047,8 +1091,8 @@ public class Interpret implements InterpreterCommands {
     		String scriptString = new String(scriptBuffer);
 			boolean success = testString(currentTest, scriptString, file);
 			if (success) {nSuccess ++;} else { nErrors++; anyError=true;}
-		} 
-    
+		}
+
     } catch (FileNotFoundException e) {
         errorStream.println("[[File '" + fileName + "' not found.]]");
     } catch (EcmaScriptException e) {
@@ -1060,21 +1104,21 @@ public class Interpret implements InterpreterCommands {
     } finally {
       if (lr!= null) {try {lr.close();} catch (IOException e) {}}
 
-      try { 
-        document.putHiddenProperty("URL", 
+      try {
+        document.putHiddenProperty("URL",
                         new ESString("file://<stdin>"));
       } catch (EcmaScriptException e) {}
     }
-    printStream.println("@@ " + nTests + " tests, " + 
-              nSuccess + " successes, " + 
+    printStream.println("@@ " + nTests + " tests, " +
+              nSuccess + " successes, " +
               nErrors + " errors.");
   }
-  
+
   /**
    * Execute a fragment to test in a controlled environment
    * @param currentTest Name of the test to execute
    * @param scriptString The fragment to test
-   * @param file The source of tests 
+   * @param file The source of tests
    */
   protected boolean testString(String currentTest, String scriptString, File file) {
     printStream.println("@@ Testing " + currentTest);
@@ -1088,19 +1132,19 @@ public class Interpret implements InterpreterCommands {
             success = theValue.booleanValue();
         } catch (EcmaScriptException e) {
                throw new EcmaScriptException("@test did not return a boolean value");
-        } 
+        }
         if (!success) {
                throw new EcmaScriptException("@test did not return 'true'");
         }
         return true;
     } catch (Exception e) {
-        printStream.println("[[Test " + currentTest + 
+        printStream.println("[[Test " + currentTest +
                            " in file " + file.getPath() + " failed]]");
         printStream.println("[[Error: " + e.getMessage() + "]]");
-        return false;                                   
+        return false;
     }
   }
-  
+
   /**
    * Print details of last execution
    */
@@ -1109,7 +1153,7 @@ public class Interpret implements InterpreterCommands {
           printStream.println("** No last result available");
       } else {
           printStream.println("** Result: " + lastResult.toDetailString());
-          printStream.println("** Evaluated in " + timeOfEval + 
+          printStream.println("** Evaluated in " + timeOfEval +
                                       " ms (note: +/-20 ms precision!)");
       }
   }
@@ -1117,29 +1161,29 @@ public class Interpret implements InterpreterCommands {
   protected void toggleDebugParse() {
         evaluator.setDebugParse( ! evaluator.isDebugParse());
         printStream.println("@@ debugParse is now: " + evaluator.isDebugParse());
-  }               
-                        
+  }
+
   protected void toggleDebugJavaAccess() {
         ESLoader.setDebugJavaAccess( ! ESLoader.isDebugJavaAccess());
         printStream.println("@@ debugJavaAccess is now: " + ESLoader.isDebugJavaAccess());
   }
-                        
+
   protected void toggleDebugLoader() {
         ESLoader.setDebugLoader( ! ESLoader.isDebugLoader());
         printStream.println("@@ debugLoader is now: " + ESLoader.isDebugLoader());
   }
-     
-  protected void toggleDebugEvent() {                   
+
+  protected void toggleDebugEvent() {
          ESWrapper.setDebugEvent( ! ESWrapper.isDebugEvent());
          printStream.println("@@ debugJavaAccess is now: " + ESWrapper.isDebugEvent());
   }
-   
+
   /**
    * List the loaded extensions
    */
   protected void listExtensions() {
          int i = 0;
-         for (Enumeration e = evaluator.getExtensions(); 
+         for (Enumeration e = evaluator.getExtensions();
                                  e.hasMoreElements() ;) {
               printStream.println(" " + e.nextElement());
               i++;
@@ -1173,7 +1217,7 @@ public class Interpret implements InterpreterCommands {
            return;
         }
   }
-    
+
   /**
    * List the free memory
    */
@@ -1183,7 +1227,7 @@ public class Interpret implements InterpreterCommands {
         long tm = rt.totalMemory();
         printStream.println("@@ Total memory: " + tm + ", free memory: " + fm);
   }
-    
+
   /**
    * List the visible properties of an object
    * @param parameter The expression returning an object on which to list the properties
@@ -1204,7 +1248,7 @@ public class Interpret implements InterpreterCommands {
                String property = e.nextElement().toString();
                printStream.print(property);
                if (! directEnumeration) {
-                   String propertyValue = 
+                   String propertyValue =
                            listObject.getProperty(property, property.hashCode()).toString();
                    // Remove leading eol
                    while (propertyValue.indexOf("\n")==0) {
@@ -1230,7 +1274,7 @@ public class Interpret implements InterpreterCommands {
            printStream.println("Cannot evaluate '" + parameter +"' properties");
            printStream.println(e);
        }
-   }  
+   }
 
    /**
     * List all propoerties of an object (visible or not)
@@ -1257,7 +1301,7 @@ public class Interpret implements InterpreterCommands {
            printStream.println(e);
        }
    }
-    
+
 
    /**
     * Clear the console
@@ -1267,7 +1311,7 @@ public class Interpret implements InterpreterCommands {
            console.clear();
        }
    }
-   
+
   /**
    * Describe an object
    * @param paramter Expression resulting in object to describe
@@ -1281,7 +1325,7 @@ public class Interpret implements InterpreterCommands {
                 parameter = "global";
             }
             printStream.println(toBeDescribed.getDescription(parameter));
-            
+
             if (toBeDescribed.isComposite()) {
                 for (Enumeration e = toBeDescribed.getAllDescriptions() ; e.hasMoreElements() ;) {
                     ValueDescription description = (ValueDescription) e.nextElement();
@@ -1387,7 +1431,15 @@ public class Interpret implements InterpreterCommands {
        new Command("load", "Load a .js, .es or .esw file") {
            boolean doCommand(Interpret interpreter, String parameter) {
                 interpreter.clearLastResult();
-                interpreter.doLoad(parameter);
+                // interpreter.doLoad(parameter); // Loading via module
+                interpreter.doLoadFile(parameter); // loading via file
+                return false;
+          }
+       };
+       new Command("module", "Load a .js, .es or .esw file via the FESI.path") {
+           boolean doCommand(Interpret interpreter, String parameter) {
+                interpreter.clearLastResult();
+                interpreter.doLoad(parameter); // Loading via module
                 return false;
           }
        };
@@ -1446,16 +1498,16 @@ public class Interpret implements InterpreterCommands {
  * Common code for all commands
  */
 abstract class Command {
-    
+
     /**
      * Keep track of all commands
      */
     static private Vector allCommands = new Vector();
-    
+
     protected String name;
     protected String lowerCaseName;   // For case insensitive search
     protected String help;
-    
+
     /**
      * Print the help text of a command
      */
@@ -1465,7 +1517,7 @@ abstract class Command {
             printStream.println("  @"+cmd.name+ " - " + cmd.help);
         }
     }
-    
+
     /**
      * Execute a command
      * @param interpreter The interpreter context
@@ -1473,9 +1525,9 @@ abstract class Command {
      * @param command the command name (as typed)
      * @param parameter the command parameter string
      */
-    static boolean executeCommand(Interpret interpreter, 
+    static boolean executeCommand(Interpret interpreter,
                                PrintStream printStream,
-                               String command, 
+                               String command,
                                String parameter) {
         Vector foundCmds = new Vector();
         String lcCommand = command.toLowerCase();
@@ -1496,7 +1548,7 @@ abstract class Command {
             Command cmd = (Command) foundCmds.elementAt(0);
             return cmd.doCommand(interpreter, parameter);
         } else {
-            printStream.println("@@ Command More than one command starting with '" + 
+            printStream.println("@@ Command More than one command starting with '" +
                                         command + "'");
             for (Enumeration e = foundCmds.elements() ; e.hasMoreElements() ;) {
                 Command cmd = (Command) e.nextElement();
@@ -1505,7 +1557,7 @@ abstract class Command {
         }
         return false;
     }
-    
+
     /**
      * Define a new command by name with a specified help string
      */
@@ -1515,7 +1567,7 @@ abstract class Command {
         this.help = help;
         allCommands.addElement(this);
     }
-    
+
     /**
      * Execute a command with the specified parameter
      * @param interpreter the interpreter context

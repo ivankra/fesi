@@ -1,0 +1,175 @@
+<project name="FESIDevTest" default="basic" basedir="..">
+    <description>
+        Test FESI in the development environment
+    </description>
+    
+
+    
+  <!-- Referenced libraries -->
+  <property name="ororegexp" location="c:/javadev/LIBS/jakarta-oro-2.0.7/jakarta-oro-2.0.7.jar"/>
+  <property name="gnuregexp" location="c:/javadev/LIBS/gnu.regexp-1.1.4/lib/gnu-regexp-1.1.4.jar"/>
+  
+  <property name="bsfdir" location = "C:/javadev/LIBS/bsf-2_2/lib/bsf.jar"/>
+  
+ 
+  
+  <!-- Directory for temporay data (deleted by clean !) -->
+  <property name="build" location="classes"/>
+  
+  <!-- Class path for tests -->
+    
+  <path id="project.execute.class.path">
+        <pathelement location="${build}"/>
+        <pathelement path="${classpath}"/>
+  </path>
+  
+  
+  <target name="init">
+    <!-- Create the time stamp -->
+    <tstamp/>
+   </target>
+
+
+
+
+  
+  <target name="basic" >
+    <java classname="FESI.Interpreter.Interpret" fork="true" failonerror="true">
+    	<arg value="-T"/> 
+    	<arg file="tests/validation/basic.estest"/> 	
+       <classpath refid="project.execute.class.path"/>
+    </java>
+   </target>
+  <target name="global" >
+    <java classname="FESI.Interpreter.Interpret" fork="true" failonerror="true">
+    	<arg value="-T"/> 
+    	<arg file="tests/validation/global.estest"/> 	
+       <classpath refid="project.execute.class.path"/>
+    </java>
+   </target>
+  <target name="expr" >
+
+    <java classname="FESI.Interpreter.Interpret" fork="true" failonerror="true">
+    	<arg value="-T"/> 
+    	<arg file="tests/validation/expr.estest"/> 	
+       <classpath refid="project.execute.class.path"/>
+    </java>
+    
+    <java classname="FESI.Interpreter.Interpret" fork="true" failonerror="true">
+    	<arg value="-T"/> 
+    	<arg file="tests/validation/stmt.estest"/> 	
+       <classpath refid="project.execute.class.path"/>
+    </java>
+   </target>
+  <target name="objfunc" >
+
+    <java classname="FESI.Interpreter.Interpret" fork="true" failonerror="true">
+    	<arg value="-T"/> 
+    	<arg file="tests/validation/objfunc.estest"/> 	
+       <classpath refid="project.execute.class.path"/>
+    </java>
+   </target>
+  <target name="names" >
+
+    <java classname="FESI.Interpreter.Interpret" fork="true" failonerror="true">
+    	<arg value="-T"/> 
+    	<arg file="tests/validation/names.estest"/> 	
+       <classpath refid="project.execute.class.path"/>
+    </java>
+   </target>
+  <target name="array" >
+
+    <java classname="FESI.Interpreter.Interpret" fork="true" failonerror="true">
+    	<arg value="-T"/> 
+    	<arg file="tests/validation/array.estest"/> 	
+       <classpath refid="project.execute.class.path"/>
+    </java>
+   </target>
+  <target name="boolnmb" >
+    <java classname="FESI.Interpreter.Interpret" fork="true" failonerror="true">
+    	<arg value="-T"/> 
+    	<arg file="tests/validation/boolnmb.estest"/> 	
+       <classpath refid="project.execute.class.path"/>
+    </java>
+   </target>
+  <target name="string" >
+    <java classname="FESI.Interpreter.Interpret" fork="true" failonerror="true">
+    	<arg value="-T"/> 
+    	<arg file="tests/validation/string.estest"/> 	
+       <classpath refid="project.execute.class.path"/>
+    </java>
+   </target>
+  <target name="date" >
+    <java classname="FESI.Interpreter.Interpret" fork="true" failonerror="true">
+    	<arg value="-T"/> 
+    	<arg file="tests/validation/date.estest"/> 	
+       <classpath refid="project.execute.class.path"/>
+    </java>
+   </target>
+  <target name="math" >
+    <java classname="FESI.Interpreter.Interpret" fork="true" failonerror="true">
+    	<arg value="-T"/> 
+    	<arg file="tests/validation/math.estest"/> 	
+       <classpath refid="project.execute.class.path"/>
+    </java>
+    </target>
+  <target name="fileio" >
+   <java classname="FESI.Interpreter.Interpret" fork="true" failonerror="true">
+    	<arg value="-T"/> 
+    	<arg file="tests/validation/fileio.estest"/> 	
+       <classpath refid="project.execute.class.path"/>
+    </java>
+   </target>
+  <target name="ja" >
+   <java classname="FESI.Interpreter.Interpret" fork="true" failonerror="true">
+    	<arg value="-T"/> 
+    	<arg file="tests/validation/ja.estest"/> 	
+       <classpath refid="project.execute.class.path"/>
+    </java>
+   </target>
+  <target name="regexp" >
+   <java classname="FESI.Interpreter.Interpret" fork="true" failonerror="true">
+    	<arg value="-T"/> 
+    	<arg file="tests/validation/regexp.estest"/> 	
+       <classpath>
+       	<path refid="project.execute.class.path"/>
+        </classpath>
+    </java>
+   </target>
+  <target name="ORORegExp" >
+   <java classname="FESI.Interpreter.Interpret" fork="true" failonerror="true">
+    	<arg value="-R"/> 
+   	    <arg value="FESI.Extensions.ORORegExp"/> 
+    	<arg value="-T"/> 
+    	<arg file="tests/validation/regexp.estest"/> 	
+       <classpath>
+       	<path refid="project.execute.class.path"/>
+        <pathelement location="${ororegexp}"/>
+       </classpath>
+    </java>
+    </target>
+  <target name="GNURegExp" >
+   <java classname="FESI.Interpreter.Interpret" fork="true" failonerror="true">
+    	<arg value="-T"/> 
+    	<arg file="tests/validation/regexp.estest"/> 	
+    	<arg value="-R"/> 
+   	    <arg value="FESI.Extensions.GNURegExp"/> 
+       <classpath>
+       	<path refid="project.execute.class.path"/>
+        <pathelement location="${gnuregexp}"/>
+        </classpath>
+    </java>
+   </target>
+  <target name="BSFTest" >
+   <java classname="FESI.Tests.BSFTest" fork="true" failonerror="true">
+       <classpath>
+       	<path refid="project.execute.class.path"/>
+        <pathelement location="${bsfdir}"/>
+        </classpath>
+    </java>
+    
+  </target>
+  
+</project>
+
+

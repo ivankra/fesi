@@ -1,0 +1,97 @@
+<installation version="1.0">
+    <info>
+        <appname>FESI</appname>
+        <appversion>1.1.8</appversion>
+        <authors>
+            <author email="fesi@lugrin.ch" name="Jean-Marc Lugrin"/>
+        </authors>
+        <url>www.lugrin.ch/fesi</url>
+        <javaversion>1.2</javaversion>
+        
+    </info>
+    <guiprefs height="480" resizable="yes" width="640"/>
+    <locale>
+        <langpack iso3="eng"/>
+        <langpack iso3="fra"/>
+    </locale>
+    <resources>
+        <res src="install-readme.html" id="HTMLInfoPanel.info"/>
+        <res src="License.txt" id="LicencePanel.licence"/>
+        <res src="shortcutSpec.xml" id="shortcutSpec.xml"/>
+		<res id="Installer.image" src="./doc/html/fesi.gif" />
+
+    </resources>
+    <panels>
+        <panel classname="HelloPanel"/>
+        <panel classname="HTMLInfoPanel"/>
+        <panel classname="LicencePanel"/>
+        <panel classname="PacksPanel"/>
+        <panel classname="TargetPanel"/>
+        <panel classname="InstallPanel"/>
+        <panel classname="ShortcutPanel"/>
+        <panel classname="FinishPanel"/>
+    </panels>
+ 
+     <!-- The native libraries to add -->
+    <native type="izpack" name="ShellLink.dll"/>
+    
+    <packs>
+    	<!-- Core is mandatory, aand contains what is required to execute Fesi -->
+        <pack name="Core" required="yes">
+            <description>Required jar files and support files to run the interpreter as an application or
+            to use it as a library. This package is mandatory.</description>
+            <file targetdir="$INSTALL_PATH" src="License.txt"/>
+            <file targetdir="$INSTALL_PATH" src="Readme.txt"/>
+            <file targetdir="$INSTALL_PATH/lib" src="lib/fesi.jar"/>
+            <file targetdir="$INSTALL_PATH/bin" src="bin/src/fesi"/>
+            <file targetdir="$INSTALL_PATH/bin" src="bin/src/fesi.bat"/>
+            <file targetdir="$INSTALL_PATH/bin" src="bin/icons"/>
+           <!-- the html documentation is copied from a temporary
+                directory, where it was put by the ANT script, that
+                adapted the version and kit location -->
+            <fileset targetdir="$INSTALL_PATH/doc/html" dir="tmp/doc/html">
+				<include name="*"/>
+	    	</fileset>
+	    	<!-- The API doc is copied from the generated area -->
+            <!-- fileset targetdir="$INSTALL_PATH/doc/html/api/fesi/jslib" dir="doc/api/fesi/jslib">
+				<include name="**.*"/>
+	    	</fileset -->
+            <fileset targetdir="$INSTALL_PATH/doc/html/api" dir="doc/api">
+				<include name="**/*"/>
+	    	</fileset>
+             <parsable targetfile="$INSTALL_PATH/bin/fesi"/>
+             <parsable targetfile="$INSTALL_PATH/bin/fesi.bat"/>
+            <executable targetfile="$INSTALL_PATH/bin/fesi" stage="never"/>
+        </pack>
+ 
+        <pack name="Examples" required="no">
+            <description>A few javascript examples that you can execute with Fesi (optional)</description>
+             <file targetdir="$INSTALL_PATH/examples" src="../FESIExamples/jslib"/>
+            <file targetdir="$INSTALL_PATH/examples" src="../FESIExamples/beans"/>
+            <file targetdir="$INSTALL_PATH/examples" src="../FESIExamples/javaaccess"/>
+            <file targetdir="$INSTALL_PATH/examples" src="../FESIExamples/swing"/>
+            <file targetdir="$INSTALL_PATH/examples" src="../FESIExamples/xml"/>
+         </pack>
+               
+        <pack name="Sources" required="no">
+            <description>The source files to compile or modify Fesi (optional)</description>
+             <file targetdir="$INSTALL_PATH" src="src"/>
+             <file targetdir="$INSTALL_PATH/bin" src="bin/src"/>
+             <file targetdir="$INSTALL_PATH/doc/design" src="doc/design/FESIDesign.doc"/>
+             <file targetdir="$INSTALL_PATH" src="ant"/>
+             <file targetdir="$INSTALL_PATH" src="tests/validation"/>
+	       <!-- For IzPack -->
+             <file targetdir="$INSTALL_PATH" src="MakeFesiInstall.xml"/>
+		 	<file targetdir="$INSTALL_PATH" src="install-readme.html"/>
+		 	<file targetdir="$INSTALL_PATH" src="shortcutSpec.xml"/>
+        </pack>
+        <pack name="Pre jdk 1.4" required="no">
+            <description>The FESI jar pre-compiled for JDK 1.1.8 to 1.3.x</description>
+             <file targetdir="$INSTALL_PATH/forJdk118" src="forJdk118/README.TXT"/>
+             <file targetdir="$INSTALL_PATH/forJdk118/bin" src="forJdk118/bin"/>
+             <file targetdir="$INSTALL_PATH/forJdk118/lib" src="forJdk118/lib"/>
+             <file targetdir="$INSTALL_PATH/forJdk118/classes" src="forJdk118/classes"/>
+         </pack>
+        
+    </packs>
+</installation>

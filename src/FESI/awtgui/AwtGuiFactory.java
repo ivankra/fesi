@@ -17,7 +17,10 @@
 
 package FESI.awtgui;
 
-import FESI.gui.*;
+import FESI.gui.Console;
+import FESI.gui.GuiFactory;
+import FESI.gui.InterpreterCommands;
+import FESI.gui.MessageBox;
 
 /**
  * Factory class to create the GUI elements, used to achieve independence
